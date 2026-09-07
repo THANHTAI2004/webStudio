@@ -11,6 +11,15 @@ export default function DashboardPage() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <Link
+          href="/dashboard/bookings"
+          className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
+        >
+          <h2 className="text-base font-semibold">\u0110\u1eb7t l\u1ecbch</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Manage booking requests and workflow.
+          </p>
+        </Link>
+        <Link
           href="/dashboard/media"
           className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
         >

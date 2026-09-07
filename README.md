@@ -50,6 +50,7 @@ http://localhost:4000/api/docs
 - Admin packages: http://localhost:3001/dashboard/packages
 - Admin post categories: http://localhost:3001/dashboard/post-categories
 - Admin posts: http://localhost:3001/dashboard/posts
+- Admin bookings: http://localhost:3001/dashboard/bookings
 
 Auth endpoints:
 
@@ -158,3 +159,30 @@ Public post API:
 - GET /api/v1/post-categories
 - GET /api/v1/posts
 - GET /api/v1/posts/:slug
+
+## Bookings
+
+- Public booking: http://localhost:3000/dat-lich
+- Admin booking: http://localhost:3001/dashboard/bookings
+
+Public booking API:
+
+- POST /api/v1/bookings
+
+Admin booking API:
+
+- GET /api/v1/admin/bookings
+- GET /api/v1/admin/bookings/calendar
+- GET /api/v1/admin/bookings/:id
+- PATCH /api/v1/admin/bookings/:id
+- PATCH /api/v1/admin/bookings/:id/status
+
+Booking status workflow:
+
+- new -> contacted, confirmed, cancelled
+- contacted -> new, confirmed, cancelled
+- confirmed -> contacted, deposit, shooting, cancelled
+- deposit -> confirmed, shooting, cancelled
+- shooting -> deposit, completed, cancelled
+- completed -> shooting
+- cancelled -> new, contacted
