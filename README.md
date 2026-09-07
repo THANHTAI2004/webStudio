@@ -39,3 +39,21 @@ http://localhost:4000/api/v1/health
 ## Swagger
 
 http://localhost:4000/api/docs
+
+## Admin Auth
+
+- Admin login: http://localhost:3001/login
+- Admin dashboard: http://localhost:3001/dashboard
+
+Auth endpoints:
+
+- POST /api/v1/auth/login
+- POST /api/v1/auth/refresh
+- POST /api/v1/auth/logout
+- GET /api/v1/auth/me
+
+Seed the initial admin:
+
+```bash
+npm --prefix apps/api run seed:admin
+```
