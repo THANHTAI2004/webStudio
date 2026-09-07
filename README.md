@@ -44,6 +44,8 @@ http://localhost:4000/api/docs
 
 - Admin login: http://localhost:3001/login
 - Admin dashboard: http://localhost:3001/dashboard
+- Admin album categories: http://localhost:3001/dashboard/album-categories
+- Admin albums: http://localhost:3001/dashboard/albums
 - Admin package categories: http://localhost:3001/dashboard/package-categories
 - Admin packages: http://localhost:3001/dashboard/packages
 
@@ -100,3 +102,30 @@ Public package API:
 - GET /api/v1/package-categories
 - GET /api/v1/packages
 - GET /api/v1/packages/:slug
+
+## Albums
+
+- Public albums: http://localhost:3000/album
+- Public album detail: http://localhost:3000/album/:slug
+
+Admin album category API:
+
+- GET /api/v1/admin/album-categories
+- POST /api/v1/admin/album-categories
+- GET /api/v1/admin/album-categories/:id
+- PATCH /api/v1/admin/album-categories/:id
+- DELETE /api/v1/admin/album-categories/:id
+
+Admin album API:
+
+- GET /api/v1/admin/albums
+- POST /api/v1/admin/albums
+- GET /api/v1/admin/albums/:id
+- PATCH /api/v1/admin/albums/:id
+- DELETE /api/v1/admin/albums/:id
+
+Public album API:
+
+- GET /api/v1/album-categories
+- GET /api/v1/albums
+- GET /api/v1/albums/:slug

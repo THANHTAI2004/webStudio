@@ -7,12 +7,12 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { resolveSlug } from '../../common/utils/slug';
+import { MediaReferenceService } from '../media/media-reference.service';
+import { MediaDocument } from '../media/schemas/media.schema';
 import {
   PackageCategory,
   PackageCategoryDocument,
 } from '../package-categories/schemas/package-category.schema';
-import { MEDIA_TYPE_IMAGE } from '../media/media.constants';
-import { Media, MediaDocument } from '../media/schemas/media.schema';
 import { CreatePackageDto } from './dto/create-package.dto';
 import { QueryPackagesDto } from './dto/query-packages.dto';
 import { QueryPublicPackagesDto } from './dto/query-public-packages.dto';
@@ -129,8 +129,7 @@ export class PackagesService {
     private readonly packageModel: Model<StudioPackage>,
     @InjectModel(PackageCategory.name)
     private readonly categoryModel: Model<PackageCategory>,
-    @InjectModel(Media.name)
-    private readonly mediaModel: Model<Media>,
+    private readonly mediaReferenceService: MediaReferenceService,
   ) {}
 
   async listAdmin(query: QueryPackagesDto): Promise<PaginatedAdminPackages> {
@@ -412,24 +411,7 @@ export class PackagesService {
       return;
     }
 
-    const objectIds = [...mediaIds].map(
-      (mediaId) => new Types.ObjectId(mediaId),
-    );
-    const mediaCount = await this.mediaModel
-      .countDocuments({
-        _id: {
-          $in: objectIds,
-        },
-        type: MEDIA_TYPE_IMAGE,
-      })
-      .exec();
-
-    if (mediaCount !== mediaIds.size) {
-      throw new BadRequestException({
-        code: 'MEDIA_NOT_FOUND',
-        message: 'One or more media references were not found.',
-      });
-    }
+    await this.mediaReferenceService.assertImagesExist(mediaIds);
   }
 
   private assertPriceIsValid(
@@ -763,14 +745,7 @@ export class PackagesService {
           },
         })
         .exec(),
-      this.mediaModel
-        .find({
-          _id: {
-            $in: [...mediaIds].map((id) => new Types.ObjectId(id)),
-          },
-          type: MEDIA_TYPE_IMAGE,
-        })
-        .exec(),
+      this.mediaReferenceService.findImagesByIds(mediaIds),
     ]);
 
     return {

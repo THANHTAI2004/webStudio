@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from '../auth/auth.module';
-import { Media, MediaSchema } from '../media/schemas/media.schema';
+import { MediaModule } from '../media/media.module';
 import {
   PackageCategory,
   PackageCategorySchema,
@@ -16,6 +16,7 @@ import { StudioPackage, StudioPackageSchema } from './schemas/package.schema';
 @Module({
   imports: [
     AuthModule,
+    MediaModule,
     MongooseModule.forFeature([
       {
         name: StudioPackage.name,
@@ -24,10 +25,6 @@ import { StudioPackage, StudioPackageSchema } from './schemas/package.schema';
       {
         name: PackageCategory.name,
         schema: PackageCategorySchema,
-      },
-      {
-        name: Media.name,
-        schema: MediaSchema,
       },
     ]),
   ],

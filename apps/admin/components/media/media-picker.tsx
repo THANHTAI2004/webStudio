@@ -21,6 +21,8 @@ interface MediaPickerProps {
   selected: MediaChoice[];
   onChange: (items: MediaChoice[]) => void;
   disabled?: boolean;
+  maxSelection?: number;
+  maxSelectionMessage?: string;
 }
 
 const PAGE_SIZE = 12;
@@ -31,6 +33,8 @@ export function MediaPicker({
   selected,
   onChange,
   disabled = false,
+  maxSelection,
+  maxSelectionMessage = "Selection limit reached.",
 }: MediaPickerProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -117,6 +121,12 @@ export function MediaPicker({
         return current.filter((item) => item.id !== choice.id);
       }
 
+      if (maxSelection !== undefined && current.length >= maxSelection) {
+        setError(maxSelectionMessage);
+        return current;
+      }
+
+      setError(null);
       return [...current, choice];
     });
   }

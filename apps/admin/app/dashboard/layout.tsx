@@ -10,6 +10,8 @@ import { withAuthRefresh } from "@/lib/api/session";
 const navigation = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/media", label: "Media" },
+  { href: "/dashboard/albums", label: "Album" },
+  { href: "/dashboard/album-categories", label: "Danh muc Album" },
   { href: "/dashboard/packages", label: "Goi chup" },
   { href: "/dashboard/package-categories", label: "Danh muc goi" },
 ];
@@ -73,7 +75,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <p className="mt-2 break-all text-sm text-zinc-600">{admin?.email}</p>
         </div>
 
-        <nav className="mt-6 grid gap-2 sm:grid-cols-4 lg:grid-cols-1">
+        <nav className="mt-6 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
           {navigation.map((item) => {
             const isActive =
               pathname === item.href ||

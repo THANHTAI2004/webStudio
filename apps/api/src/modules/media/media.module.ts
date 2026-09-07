@@ -7,9 +7,11 @@ import {
   StudioPackage,
   StudioPackageSchema,
 } from '../packages/schemas/package.schema';
+import { StudioAlbum, StudioAlbumSchema } from '../albums/schemas/album.schema';
 import { createMulterOptions } from './media-upload.config';
 import { MediaController } from './media.controller';
 import { MediaProcessingService } from './media-processing.service';
+import { MediaReferenceService } from './media-reference.service';
 import { MediaStorageService } from './media-storage.service';
 import { MediaUsageService } from './media-usage.service';
 import { Media, MediaSchema } from './schemas/media.schema';
@@ -32,6 +34,10 @@ import { MediaService } from './media.service';
         name: StudioPackage.name,
         schema: StudioPackageSchema,
       },
+      {
+        name: StudioAlbum.name,
+        schema: StudioAlbumSchema,
+      },
     ]),
   ],
   controllers: [MediaController],
@@ -39,7 +45,9 @@ import { MediaService } from './media.service';
     MediaService,
     MediaStorageService,
     MediaProcessingService,
+    MediaReferenceService,
     MediaUsageService,
   ],
+  exports: [MediaReferenceService],
 })
 export class MediaModule {}
