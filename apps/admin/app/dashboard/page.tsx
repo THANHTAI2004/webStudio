@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
 import { AdminProfile, getMe, logout, refresh } from "@/lib/api/auth";
@@ -91,22 +92,35 @@ export default function DashboardPage() {
           {error ? <p className="text-sm text-red-700">{error}</p> : null}
 
           {admin ? (
-            <dl className="grid gap-5 sm:grid-cols-2">
-              <div>
-                <dt className="text-sm font-medium text-zinc-500">Name</dt>
-                <dd className="mt-1 text-base font-semibold">{admin.name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-zinc-500">Email</dt>
-                <dd className="mt-1 break-all text-base font-semibold">
-                  {admin.email}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-zinc-500">Role</dt>
-                <dd className="mt-1 text-base font-semibold">{admin.role}</dd>
-              </div>
-            </dl>
+            <div className="grid gap-6 lg:grid-cols-[1fr_240px]">
+              <dl className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <dt className="text-sm font-medium text-zinc-500">Name</dt>
+                  <dd className="mt-1 text-base font-semibold">
+                    {admin.name}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-zinc-500">Email</dt>
+                  <dd className="mt-1 break-all text-base font-semibold">
+                    {admin.email}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-zinc-500">Role</dt>
+                  <dd className="mt-1 text-base font-semibold">
+                    {admin.role}
+                  </dd>
+                </div>
+              </dl>
+
+              <Link
+                href="/dashboard/media"
+                className="flex items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100"
+              >
+                Media Library
+              </Link>
+            </div>
           ) : null}
         </div>
       </section>

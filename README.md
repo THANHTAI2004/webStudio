@@ -57,3 +57,17 @@ Seed the initial admin:
 ```bash
 npm --prefix apps/api run seed:admin
 ```
+
+## Media Library
+
+- Media Library: http://localhost:3001/dashboard/media
+- Static media: http://localhost:4000/uploads/...
+- Storage: data/uploads/
+
+Media API:
+
+- POST /api/v1/admin/media/upload
+- GET /api/v1/admin/media
+- GET /api/v1/admin/media/:id
+- PATCH /api/v1/admin/media/:id
+- DELETE /api/v1/admin/media/:id

@@ -1,7 +1,12 @@
+import path from 'node:path';
 import type { SignOptions } from 'jsonwebtoken';
 
 export const API_GLOBAL_PREFIX = 'api/v1';
 export const DEFAULT_API_PORT = 4000;
+export const DEFAULT_UPLOAD_DIR = '../../data/uploads';
+export const DEFAULT_MEDIA_URL_PREFIX = '/uploads';
+export const DEFAULT_MAX_UPLOAD_MB = 25;
+export const DEFAULT_MAX_UPLOAD_FILES = 20;
 export const DEFAULT_CORS_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
@@ -21,6 +26,8 @@ const DURATION_MULTIPLIERS: Record<string, number> = {
   w: 7 * 24 * 60 * 60 * 1000,
   y: 365 * 24 * 60 * 60 * 1000,
 };
+
+const ONE_MEGABYTE = 1024 * 1024;
 
 export function parsePort(value?: string): number {
   const parsed = Number(value);
@@ -81,4 +88,54 @@ export function parseDurationMs(value: JwtTtl): number {
   const unit = match[2].toLowerCase();
 
   return amount * DURATION_MULTIPLIERS[unit];
+}
+
+export function parsePositiveInteger(
+  value: string | undefined,
+  fallback: number,
+  key: string,
+): number {
+  const parsed = Number(value);
+
+  if (Number.isInteger(parsed) && parsed > 0) {
+    return parsed;
+  }
+
+  if (value === undefined || value.trim() === '') {
+    return fallback;
+  }
+
+  throw new Error(`${key} must be a positive integer.`);
+}
+
+export function parseUploadMaxBytes(value?: string): number {
+  return (
+    parsePositiveInteger(value, DEFAULT_MAX_UPLOAD_MB, 'MAX_UPLOAD_MB') *
+    ONE_MEGABYTE
+  );
+}
+
+export function parseUploadMaxFiles(value?: string): number {
+  return parsePositiveInteger(
+    value,
+    DEFAULT_MAX_UPLOAD_FILES,
+    'MAX_UPLOAD_FILES',
+  );
+}
+
+export function resolveUploadRoot(uploadDir?: string): string {
+  const configuredUploadDir = uploadDir?.trim() || DEFAULT_UPLOAD_DIR;
+
+  if (path.isAbsolute(configuredUploadDir)) {
+    return path.resolve(configuredUploadDir);
+  }
+
+  return path.resolve(process.cwd(), configuredUploadDir);
+}
+
+export function normalizeMediaUrlPrefix(value?: string): string {
+  const prefix = value?.trim() || DEFAULT_MEDIA_URL_PREFIX;
+  const prefixed = prefix.startsWith('/') ? prefix : `/${prefix}`;
+
+  return prefixed.replace(/\/+$/, '') || DEFAULT_MEDIA_URL_PREFIX;
 }
