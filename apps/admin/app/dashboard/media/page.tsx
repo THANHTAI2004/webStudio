@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import {
   ChangeEvent,
   DragEvent,
@@ -184,7 +183,7 @@ export default function MediaLibraryPage() {
   }
 
   async function handleDelete(mediaItem: MediaItem) {
-    const confirmed = window.confirm("Bạn có chắc muốn xóa ảnh này?");
+    const confirmed = window.confirm("Delete this image?");
 
     if (!confirmed) {
       return;
@@ -201,203 +200,196 @@ export default function MediaLibraryPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-6 py-8 text-zinc-950">
-      <section className="mx-auto w-full max-w-7xl">
-        <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
-            >
-              Dashboard
-            </Link>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-              Media Library
-            </h1>
-          </div>
+    <section className="mx-auto w-full max-w-7xl">
+      <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
+            Media
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-normal">
+            Media Library
+          </h1>
+        </div>
 
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            disabled={isUploading}
-            className="rounded-md bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
-          >
-            {isUploading ? "Uploading..." : "Upload images"}
-          </button>
-        </header>
-
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`mt-8 rounded-lg border border-dashed bg-white p-6 transition ${
-            isDragging
-              ? "border-emerald-500 bg-emerald-50"
-              : "border-zinc-300"
-          }`}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={isUploading}
+          className="rounded-md bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
-          <input
-            ref={inputRef}
-            type="file"
-            accept={ACCEPTED_IMAGE_TYPES}
-            multiple
-            onChange={handleInputChange}
-            className="hidden"
-          />
+          {isUploading ? "Uploading..." : "Upload images"}
+        </button>
+      </header>
+
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`mt-8 rounded-lg border border-dashed bg-white p-6 transition ${
+          isDragging ? "border-emerald-500 bg-emerald-50" : "border-zinc-300"
+        }`}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept={ACCEPTED_IMAGE_TYPES}
+          multiple
+          onChange={handleInputChange}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold transition hover:border-zinc-400 hover:bg-zinc-50"
+        >
+          Choose files
+        </button>
+        <p className="mt-4 text-sm text-zinc-600">
+          Drag and drop JPEG, PNG, or WebP images here. Maximum {MAX_UPLOAD_MB}
+          MB/file.
+        </p>
+      </div>
+
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <input
+          type="search"
+          value={search}
+          onChange={(event) => {
+            setPage(1);
+            setSearch(event.target.value);
+          }}
+          placeholder="Search by name or alt"
+          className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 sm:max-w-sm"
+        />
+
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold transition hover:border-zinc-400 hover:bg-zinc-50"
+            disabled={page <= 1 || isLoading}
+            onClick={() => setPage((value) => Math.max(1, value - 1))}
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
           >
-            Choose files
+            Previous
           </button>
-          <p className="mt-4 text-sm text-zinc-600">
-            Drag and drop JPEG, PNG, or WebP images here. Maximum {MAX_UPLOAD_MB}
-            MB/file.
-          </p>
+          <span className="min-w-20 text-center text-sm text-zinc-600">
+            {page} / {Math.max(totalPages, 1)}
+          </span>
+          <button
+            type="button"
+            disabled={totalPages === 0 || page >= totalPages || isLoading}
+            onClick={() => setPage((value) => value + 1)}
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
+          >
+            Next
+          </button>
         </div>
+      </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => {
-              setPage(1);
-              setSearch(event.target.value);
-            }}
-            placeholder="Search by name or alt"
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 sm:max-w-sm"
-          />
+      {error ? (
+        <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              disabled={page <= 1 || isLoading}
-              onClick={() => setPage((value) => Math.max(1, value - 1))}
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
-            >
-              Previous
-            </button>
-            <span className="min-w-20 text-center text-sm text-zinc-600">
-              {page} / {Math.max(totalPages, 1)}
-            </span>
-            <button
-              type="button"
-              disabled={totalPages === 0 || page >= totalPages || isLoading}
-              onClick={() => setPage((value) => value + 1)}
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+      {isLoading ? (
+        <p className="mt-8 text-sm text-zinc-600">Loading media...</p>
+      ) : null}
 
-        {error ? (
-          <p className="mt-5 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
-        ) : null}
+      {!isLoading && media.length === 0 ? (
+        <p className="mt-8 rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
+          No media found.
+        </p>
+      ) : null}
 
-        {isLoading ? (
-          <p className="mt-8 text-sm text-zinc-600">Loading media...</p>
-        ) : null}
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {media.map((mediaItem) => (
+          <article
+            key={mediaItem.id}
+            className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
+          >
+            <div className="relative aspect-[4/3] bg-zinc-100">
+              <Image
+                src={getMediaAssetUrl(mediaItem.variants.thumb.url)}
+                alt={mediaItem.alt || mediaItem.originalName}
+                fill
+                sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
 
-        {!isLoading && media.length === 0 ? (
-          <p className="mt-8 rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-            No media found.
-          </p>
-        ) : null}
-
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {media.map((mediaItem) => (
-            <article
-              key={mediaItem.id}
-              className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
-            >
-              <div className="relative aspect-[4/3] bg-zinc-100">
-                <Image
-                  src={getMediaAssetUrl(mediaItem.variants.thumb.url)}
-                  alt={mediaItem.alt || mediaItem.originalName}
-                  fill
-                  sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="object-cover"
-                />
+            <div className="space-y-4 p-4">
+              <div>
+                <h2 className="line-clamp-2 text-sm font-semibold">
+                  {mediaItem.originalName}
+                </h2>
+                <p className="mt-1 text-xs text-zinc-500">
+                  {mediaItem.width} x {mediaItem.height} px -{" "}
+                  {formatBytes(mediaItem.originalSize)}
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  {formatDate(mediaItem.createdAt)}
+                </p>
               </div>
 
-              <div className="space-y-4 p-4">
-                <div>
-                  <h2 className="line-clamp-2 text-sm font-semibold">
-                    {mediaItem.originalName}
-                  </h2>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    {mediaItem.width} x {mediaItem.height} px ·{" "}
-                    {formatBytes(mediaItem.originalSize)}
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    {formatDate(mediaItem.createdAt)}
-                  </p>
-                </div>
-
-                {editingId === mediaItem.id ? (
-                  <div className="space-y-2">
-                    <textarea
-                      value={altDraft}
-                      onChange={(event) => setAltDraft(event.target.value)}
-                      maxLength={300}
-                      className="min-h-20 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void saveAlt(mediaItem)}
-                        className="rounded-md bg-zinc-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingId(null)}
-                        className="rounded-md border border-zinc-300 px-3 py-2 text-xs font-semibold transition hover:bg-zinc-50"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+              {editingId === mediaItem.id ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={altDraft}
+                    onChange={(event) => setAltDraft(event.target.value)}
+                    maxLength={300}
+                    className="min-h-20 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void saveAlt(mediaItem)}
+                      className="rounded-md bg-zinc-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      className="rounded-md border border-zinc-300 px-3 py-2 text-xs font-semibold transition hover:bg-zinc-50"
+                    >
+                      Cancel
+                    </button>
                   </div>
-                ) : (
-                  <p className="min-h-10 text-sm text-zinc-600">
-                    {mediaItem.alt || "No alt text"}
-                  </p>
-                )}
-
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void handleCopy(mediaItem)}
-                    className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-semibold transition hover:bg-zinc-50"
-                  >
-                    {copiedId === mediaItem.id ? "Copied" : "Copy URL"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => startEditing(mediaItem)}
-                    className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-semibold transition hover:bg-zinc-50"
-                  >
-                    Edit Alt
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleDelete(mediaItem)}
-                    className="rounded-md border border-red-200 px-2 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
-                  >
-                    Delete
-                  </button>
                 </div>
+              ) : (
+                <p className="min-h-10 text-sm text-zinc-600">
+                  {mediaItem.alt || "No alt text"}
+                </p>
+              )}
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleCopy(mediaItem)}
+                  className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-semibold transition hover:bg-zinc-50"
+                >
+                  {copiedId === mediaItem.id ? "Copied" : "Copy URL"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startEditing(mediaItem)}
+                  className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-semibold transition hover:bg-zinc-50"
+                >
+                  Edit Alt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleDelete(mediaItem)}
+                  className="rounded-md border border-red-200 px-2 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
+                >
+                  Delete
+                </button>
               </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    </main>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 

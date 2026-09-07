@@ -6,6 +6,8 @@ import { AdminsModule } from './modules/admins/admins.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { MediaModule } from './modules/media/media.module';
+import { PackageCategoriesModule } from './modules/package-categories/package-categories.module';
+import { PackagesModule } from './modules/packages/packages.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { MediaModule } from './modules/media/media.module';
     AuthModule,
     HealthModule,
     MediaModule,
+    PackageCategoriesModule,
+    PackagesModule,
   ],
 })
 export class AppModule {}

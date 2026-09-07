@@ -23,6 +23,7 @@ import {
 } from './schemas/media.schema';
 import { MediaProcessingService } from './media-processing.service';
 import { MediaStorageService } from './media-storage.service';
+import { MediaUsageService } from './media-usage.service';
 
 export interface PublicMediaVariant {
   url: string;
@@ -65,6 +66,7 @@ export class MediaService {
     private readonly mediaModel: Model<Media>,
     private readonly mediaStorageService: MediaStorageService,
     private readonly mediaProcessingService: MediaProcessingService,
+    private readonly mediaUsageService: MediaUsageService,
   ) {}
 
   async uploadImages(
@@ -137,7 +139,10 @@ export class MediaService {
     return this.toPublicMedia(media);
   }
 
-  async updateMedia(id: string, updateMediaDto: UpdateMediaDto): Promise<PublicMedia> {
+  async updateMedia(
+    id: string,
+    updateMediaDto: UpdateMediaDto,
+  ): Promise<PublicMedia> {
     const media = await this.findMediaDocument(id);
 
     if (updateMediaDto.alt !== undefined) {
@@ -152,6 +157,7 @@ export class MediaService {
   async deleteMedia(id: string): Promise<void> {
     const media = await this.findMediaDocument(id);
 
+    await this.mediaUsageService.assertMediaCanBeDeleted(media._id);
     await this.mediaStorageService.deleteMediaDirectory(media.directory);
     await this.mediaModel.deleteOne({ _id: media._id }).exec();
   }
@@ -230,15 +236,20 @@ export class MediaService {
     createdDirectories: Set<string>,
   ): Promise<void> {
     for (const media of createdDocuments) {
-      await this.mediaModel.deleteOne({ _id: media._id }).exec().catch(() => {
-        return;
-      });
+      await this.mediaModel
+        .deleteOne({ _id: media._id })
+        .exec()
+        .catch(() => {
+          return;
+        });
     }
 
     for (const directory of createdDirectories) {
-      await this.mediaStorageService.deleteMediaDirectory(directory).catch(() => {
-        return;
-      });
+      await this.mediaStorageService
+        .deleteMediaDirectory(directory)
+        .catch(() => {
+          return;
+        });
     }
   }
 
