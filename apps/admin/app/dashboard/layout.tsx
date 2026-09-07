@@ -10,10 +10,12 @@ import { withAuthRefresh } from "@/lib/api/session";
 const navigation = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/media", label: "Media" },
+  { href: "/dashboard/posts", label: "Tin t\u1ee9c" },
+  { href: "/dashboard/post-categories", label: "Danh m\u1ee5c tin" },
   { href: "/dashboard/albums", label: "Album" },
-  { href: "/dashboard/album-categories", label: "Danh muc Album" },
-  { href: "/dashboard/packages", label: "Goi chup" },
-  { href: "/dashboard/package-categories", label: "Danh muc goi" },
+  { href: "/dashboard/album-categories", label: "Danh m\u1ee5c Album" },
+  { href: "/dashboard/packages", label: "G\u00f3i ch\u1ee5p" },
+  { href: "/dashboard/package-categories", label: "Danh m\u1ee5c g\u00f3i" },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {

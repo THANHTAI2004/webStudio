@@ -8,6 +8,7 @@ import {
   StudioPackageSchema,
 } from '../packages/schemas/package.schema';
 import { StudioAlbum, StudioAlbumSchema } from '../albums/schemas/album.schema';
+import { StudioPost, StudioPostSchema } from '../posts/schemas/post.schema';
 import { createMulterOptions } from './media-upload.config';
 import { MediaController } from './media.controller';
 import { MediaProcessingService } from './media-processing.service';
@@ -37,6 +38,10 @@ import { MediaService } from './media.service';
       {
         name: StudioAlbum.name,
         schema: StudioAlbumSchema,
+      },
+      {
+        name: StudioPost.name,
+        schema: StudioPostSchema,
       },
     ]),
   ],

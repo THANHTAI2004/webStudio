@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { StudioAlbum } from '../albums/schemas/album.schema';
 import { StudioPackage } from '../packages/schemas/package.schema';
+import { StudioPost } from '../posts/schemas/post.schema';
 
 @Injectable()
 export class MediaUsageService {
@@ -11,6 +12,8 @@ export class MediaUsageService {
     private readonly packageModel: Model<StudioPackage>,
     @InjectModel(StudioAlbum.name)
     private readonly albumModel: Model<StudioAlbum>,
+    @InjectModel(StudioPost.name)
+    private readonly postModel: Model<StudioPost>,
   ) {}
 
   async assertMediaCanBeDeleted(mediaId: Types.ObjectId): Promise<void> {
@@ -31,6 +34,11 @@ export class MediaUsageService {
             { galleryMediaIds: mediaId },
             { 'seo.ogImageMediaId': mediaId },
           ],
+        })
+        .exec(),
+      this.postModel
+        .exists({
+          $or: [{ coverMediaId: mediaId }, { 'seo.ogImageMediaId': mediaId }],
         })
         .exec(),
     ];

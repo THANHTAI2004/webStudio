@@ -48,6 +48,8 @@ http://localhost:4000/api/docs
 - Admin albums: http://localhost:3001/dashboard/albums
 - Admin package categories: http://localhost:3001/dashboard/package-categories
 - Admin packages: http://localhost:3001/dashboard/packages
+- Admin post categories: http://localhost:3001/dashboard/post-categories
+- Admin posts: http://localhost:3001/dashboard/posts
 
 Auth endpoints:
 
@@ -129,3 +131,30 @@ Public album API:
 - GET /api/v1/album-categories
 - GET /api/v1/albums
 - GET /api/v1/albums/:slug
+
+## Posts / News
+
+- Public news: http://localhost:3000/tin-tuc
+- Public article detail: http://localhost:3000/tin-tuc/:slug
+
+Admin post category API:
+
+- GET /api/v1/admin/post-categories
+- POST /api/v1/admin/post-categories
+- GET /api/v1/admin/post-categories/:id
+- PATCH /api/v1/admin/post-categories/:id
+- DELETE /api/v1/admin/post-categories/:id
+
+Admin post API:
+
+- GET /api/v1/admin/posts
+- POST /api/v1/admin/posts
+- GET /api/v1/admin/posts/:id
+- PATCH /api/v1/admin/posts/:id
+- DELETE /api/v1/admin/posts/:id
+
+Public post API:
+
+- GET /api/v1/post-categories
+- GET /api/v1/posts
+- GET /api/v1/posts/:slug

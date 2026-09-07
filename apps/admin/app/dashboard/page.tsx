@@ -20,6 +20,24 @@ export default function DashboardPage() {
           </p>
         </Link>
         <Link
+          href="/dashboard/posts"
+          className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
+        >
+          <h2 className="text-base font-semibold">Tin t\u1ee9c</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Create and publish news articles.
+          </p>
+        </Link>
+        <Link
+          href="/dashboard/post-categories"
+          className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
+        >
+          <h2 className="text-base font-semibold">Danh m\u1ee5c tin</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            Organize news articles by category.
+          </p>
+        </Link>
+        <Link
           href="/dashboard/albums"
           className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
         >
@@ -32,7 +50,7 @@ export default function DashboardPage() {
           href="/dashboard/album-categories"
           className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
         >
-          <h2 className="text-base font-semibold">Danh muc Album</h2>
+          <h2 className="text-base font-semibold">Danh m\u1ee5c Album</h2>
           <p className="mt-2 text-sm text-zinc-600">
             Organize albums by category.
           </p>
@@ -41,7 +59,7 @@ export default function DashboardPage() {
           href="/dashboard/packages"
           className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
         >
-          <h2 className="text-base font-semibold">Goi chup</h2>
+          <h2 className="text-base font-semibold">G\u00f3i ch\u1ee5p</h2>
           <p className="mt-2 text-sm text-zinc-600">
             Create and publish package pages.
           </p>
@@ -50,7 +68,7 @@ export default function DashboardPage() {
           href="/dashboard/package-categories"
           className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
         >
-          <h2 className="text-base font-semibold">Danh muc goi</h2>
+          <h2 className="text-base font-semibold">Danh m\u1ee5c g\u00f3i</h2>
           <p className="mt-2 text-sm text-zinc-600">
             Organize packages by category.
           </p>

@@ -40,8 +40,15 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "sanitize-html": "2.17.7",
     "sharp": "^0.35.4",
+    "studio-platform": "file:../..",
     "swagger-ui-express": "^5.0.1"
+  },
+  "overrides": {
+    "sanitize-html": {
+      "htmlparser2": "8.0.2"
+    }
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
@@ -54,6 +61,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
+    "@types/sanitize-html": "^2.16.1",
     "@types/supertest": "^7.0.0",
     "jest": "^30.0.0",
     "oxlint": "^1.58.0",
