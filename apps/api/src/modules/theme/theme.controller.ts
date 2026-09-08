@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiCookieAuth,
   ApiOkResponse,
   ApiOperation,
@@ -17,6 +19,73 @@ interface ThemeItemResponse {
   data: ThemeResponse;
 }
 
+const themeExample = {
+  success: true,
+  data: {
+    colors: {
+      primary: '#0F766E',
+      secondary: '#111827',
+      background: '#FAFAF9',
+      surface: '#FFFFFF',
+      text: '#18181B',
+      mutedText: '#52525B',
+      border: '#E4E4E7',
+      accent: '#C9A96E',
+    },
+    buttons: {
+      radius: 6,
+      style: 'solid',
+    },
+    cards: {
+      radius: 8,
+    },
+    layout: {
+      maxWidth: 1152,
+    },
+    typography: {
+      headingFont: 'sans',
+      bodyFont: 'sans',
+    },
+    createdAt: '2026-09-08T00:00:00.000Z',
+    updatedAt: '2026-09-08T00:00:00.000Z',
+  },
+};
+
+const adminThemeExample = {
+  success: true,
+  data: {
+    ...themeExample.data,
+    key: 'default',
+  },
+};
+
+const updateThemeExample = {
+  colors: {
+    primary: '#0F766E',
+    secondary: '#111827',
+    background: '#FAFAF9',
+    surface: '#FFFFFF',
+    text: '#18181B',
+    mutedText: '#52525B',
+    border: '#E4E4E7',
+    accent: '#C9A96E',
+  },
+  buttons: {
+    radius: 6,
+    style: 'solid',
+  },
+  cards: {
+    radius: 8,
+  },
+  layout: {
+    maxWidth: 1152,
+  },
+  typography: {
+    headingFont: 'sans',
+    bodyFont: 'sans',
+  },
+};
+
 @ApiTags('Theme')
 @Controller('theme')
 export class PublicThemeController {
@@ -24,7 +93,10 @@ export class PublicThemeController {
 
   @Get()
   @ApiOperation({ summary: 'Get public site theme.' })
-  @ApiOkResponse({ description: 'Theme returned.' })
+  @ApiOkResponse({
+    description: 'Theme returned.',
+    schema: { example: themeExample },
+  })
   async detail(): Promise<ThemeItemResponse> {
     return {
       success: true,
@@ -46,7 +118,10 @@ export class AdminThemeController {
 
   @Get()
   @ApiOperation({ summary: 'Get singleton theme for admin.' })
-  @ApiOkResponse({ description: 'Theme returned.' })
+  @ApiOkResponse({
+    description: 'Theme returned.',
+    schema: { example: adminThemeExample },
+  })
   async detail(): Promise<ThemeItemResponse> {
     return {
       success: true,
@@ -56,7 +131,22 @@ export class AdminThemeController {
 
   @Patch()
   @ApiOperation({ summary: 'Update singleton theme.' })
-  @ApiOkResponse({ description: 'Theme updated.' })
+  @ApiBody({
+    type: UpdateThemeDto,
+    examples: {
+      update: {
+        summary: 'Update safe theme tokens used as public CSS variables.',
+        value: updateThemeExample,
+      },
+    },
+  })
+  @ApiOkResponse({
+    description: 'Theme updated.',
+    schema: { example: adminThemeExample },
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid color, radius, max width, button style, or font enum.',
+  })
   async update(@Body() dto: UpdateThemeDto): Promise<ThemeItemResponse> {
     return {
       success: true,
@@ -64,4 +154,3 @@ export class AdminThemeController {
     };
   }
 }
-
