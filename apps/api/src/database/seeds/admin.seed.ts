@@ -5,7 +5,10 @@ import {
   Admin,
   AdminSchema,
 } from '../../modules/admins/schemas/admin.schema';
-import { buildMongoUriFromParts } from '../../config/env';
+import {
+  buildMongoUriFromParts,
+  requireProductionConfigValue,
+} from '../../config/env';
 import { normalizeAdminEmail } from '../../modules/admins/admins.service';
 
 loadEnv({ quiet: true });
@@ -42,6 +45,10 @@ async function seedAdmin(): Promise<void> {
 
   if (adminPassword.length < 8) {
     throw new Error('ADMIN_SEED_PASSWORD must be at least 8 characters.');
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    requireProductionConfigValue(adminPassword, 'ADMIN_SEED_PASSWORD');
   }
 
   const connection = await mongoose.createConnection(mongoUri).asPromise();

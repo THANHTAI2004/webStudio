@@ -23,6 +23,11 @@ Real secrets belong in `.env.production` on the server. Do not commit:
 
 The committed `.env.production.example` contains placeholders only.
 
+Production API startup rejects missing placeholder-like JWT secrets, Mongo app
+credentials, Mongo auth source, and CORS origins. Values containing patterns
+such as `CHANGE_ME`, `change-this`, `placeholder`, or `example` are considered
+unsafe for runtime production config.
+
 ## MongoDB
 
 MongoDB is attached only to the internal `studio_db` network. The API and backup

@@ -15,8 +15,11 @@ export const DEFAULT_JWT_ACCESS_TTL = '15m';
 export const DEFAULT_JWT_REFRESH_TTL = '30d';
 export const DEFAULT_MONGO_HOST = 'localhost';
 export const DEFAULT_MONGO_PORT = 27017;
+const MONGO_URI_SCHEME = 'mongodb';
 
 export type JwtTtl = NonNullable<SignOptions['expiresIn']>;
+
+type EnvironmentSource = Record<string, string | undefined>;
 
 const DURATION_PATTERN = /^(\d+)\s*(ms|s|m|h|d|w|y)$/i;
 const DURATION_MULTIPLIERS: Record<string, number> = {
@@ -30,6 +33,13 @@ const DURATION_MULTIPLIERS: Record<string, number> = {
 };
 
 const ONE_MEGABYTE = 1024 * 1024;
+const PLACEHOLDER_PATTERNS = [
+  /change[\s_-]*me/i,
+  /change[\s_-]*this/i,
+  /placeholder/i,
+  /example/i,
+  /^todo$/i,
+];
 
 export function parsePort(value?: string): number {
   const parsed = Number(value);
@@ -83,6 +93,63 @@ export function requireConfigValue(value: string | undefined, key: string): stri
   return trimmedValue;
 }
 
+export function isPlaceholderConfigValue(value: string | undefined): boolean {
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue) {
+    return false;
+  }
+
+  return PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(trimmedValue));
+}
+
+export function requireProductionConfigValue(
+  value: string | undefined,
+  key: string,
+): string {
+  const trimmedValue = requireConfigValue(value, key);
+
+  if (isPlaceholderConfigValue(trimmedValue)) {
+    throw new Error(`${key} must be replaced before production startup.`);
+  }
+
+  return trimmedValue;
+}
+
+export function validateProductionEnvironment(env: EnvironmentSource): void {
+  if (env.NODE_ENV?.trim() !== 'production') {
+    return;
+  }
+
+  requireProductionConfigValue(env.JWT_ACCESS_SECRET, 'JWT_ACCESS_SECRET');
+  requireProductionConfigValue(env.JWT_REFRESH_SECRET, 'JWT_REFRESH_SECRET');
+
+  const corsOrigins = requireProductionConfigValue(
+    env.CORS_ORIGINS,
+    'CORS_ORIGINS',
+  );
+
+  if (corsOrigins.split(',').some((origin) => origin.trim() === '*')) {
+    throw new Error('CORS_ORIGINS must not include wildcard origins.');
+  }
+
+  const parsedCorsOrigins = parseCorsOrigins(corsOrigins);
+
+  if (parsedCorsOrigins.length === 0) {
+    throw new Error('CORS_ORIGINS must include at least one production origin.');
+  }
+
+  if (env.MONGODB_URI?.trim()) {
+    requireProductionConfigValue(env.MONGODB_URI, 'MONGODB_URI');
+    return;
+  }
+
+  requireProductionConfigValue(env.MONGO_DATABASE, 'MONGO_DATABASE');
+  requireProductionConfigValue(env.MONGO_APP_USERNAME, 'MONGO_APP_USERNAME');
+  requireProductionConfigValue(env.MONGO_APP_PASSWORD, 'MONGO_APP_PASSWORD');
+  requireProductionConfigValue(env.MONGO_AUTH_SOURCE, 'MONGO_AUTH_SOURCE');
+}
+
 export function parseMongoPort(value?: string): number {
   const parsed = Number(value);
 
@@ -126,7 +193,8 @@ export function buildMongoUriFromParts(env: {
   const authSource = env.authSource?.trim() || database;
 
   return [
-    'mongodb://',
+    MONGO_URI_SCHEME,
+    '://',
     encodeURIComponent(username),
     ':',
     encodeURIComponent(password),

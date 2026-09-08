@@ -27,6 +27,7 @@ import {
 } from "@/lib/api/home";
 import { type AdminPackage, getPackages } from "@/lib/api/packages";
 import { withAuthRefresh } from "@/lib/api/session";
+import { getPublicUrl } from "@/lib/site-url";
 
 const homeSections: Array<{ key: HomeSectionKey; label: string }> = [
   { key: "hero", label: "Hero" },
@@ -1294,12 +1295,6 @@ function moveArrayItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
 
 function getSectionLabel(key: HomeSectionKey): string {
   return homeSections.find((item) => item.key === key)?.label ?? key;
-}
-
-function getPublicUrl(path: string): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  return new URL(path, siteUrl).toString();
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {

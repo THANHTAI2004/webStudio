@@ -5,7 +5,7 @@ import { getPackages, type PublicPackageListItem } from "@/lib/api/packages";
 import { getPosts, type PublicPostListItem } from "@/lib/api/posts";
 import { getSiteUrl } from "@/lib/site-url";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const STATIC_ROUTES = [
   "/",
@@ -17,6 +17,7 @@ const STATIC_ROUTES = [
   "/dia-diem",
   "/lien-he",
 ] as const;
+const SITEMAP_PAGE_SIZE = 50;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = (getSiteUrl() ?? new URL("http://localhost:3000")).toString();
@@ -64,7 +65,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
 async function getAllPackages(): Promise<PublicPackageListItem[]> {
   try {
-    return await getPaginated((page) => getPackages({ page, limit: 100 }));
+    return await getPaginated((page) =>
+      getPackages({ page, limit: SITEMAP_PAGE_SIZE }, { cache: "no-store" }),
+    );
   } catch {
     return [];
   }
@@ -72,7 +75,9 @@ async function getAllPackages(): Promise<PublicPackageListItem[]> {
 
 async function getAllAlbums(): Promise<PublicAlbumListItem[]> {
   try {
-    return await getPaginated((page) => getAlbums({ page, limit: 100 }));
+    return await getPaginated((page) =>
+      getAlbums({ page, limit: SITEMAP_PAGE_SIZE }, { cache: "no-store" }),
+    );
   } catch {
     return [];
   }
@@ -80,7 +85,9 @@ async function getAllAlbums(): Promise<PublicAlbumListItem[]> {
 
 async function getAllPosts(): Promise<PublicPostListItem[]> {
   try {
-    return await getPaginated((page) => getPosts({ page, limit: 100 }));
+    return await getPaginated((page) =>
+      getPosts({ page, limit: SITEMAP_PAGE_SIZE }, { cache: "no-store" }),
+    );
   } catch {
     return [];
   }
@@ -88,7 +95,7 @@ async function getAllPosts(): Promise<PublicPostListItem[]> {
 
 async function getAllLocations(): Promise<PublicLocationListItem[]> {
   try {
-    return await getLocations({ revalidate });
+    return await getLocations({ cache: "no-store" });
   } catch {
     return [];
   }

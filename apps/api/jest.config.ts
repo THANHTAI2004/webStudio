@@ -27,6 +27,7 @@ const config: Config = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
   testRegex: '.*\\.spec\\.ts$',
+  setupFiles: ['<rootDir>/test/setup-test-env.ts'],
   moduleNameMapper: pathsToModuleNameMapper(paths, {
     prefix: '<rootDir>/',
     useESM: true,

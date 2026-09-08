@@ -61,6 +61,12 @@ mongorestore \
 
 mkdir -p "$UPLOAD_ROOT"
 find "$UPLOAD_ROOT" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-tar -xzf "$uploads_archive" -C "$UPLOAD_ROOT"
+tar \
+  --no-same-owner \
+  --no-same-permissions \
+  --no-overwrite-dir \
+  --touch \
+  -xzf "$uploads_archive" \
+  -C "$UPLOAD_ROOT"
 
 echo "Restore completed from: ${backup_dir}"

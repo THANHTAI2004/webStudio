@@ -12,7 +12,8 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     env:
-      MONGODB_URI: mongodb://studio_admin:change-me@127.0.0.1:27017/studio?authSource=admin
+      MONGODB_URI: mongodb://studio_admin:change-me@127.0.0.1:27017/studio_test?authSource=admin
+      MONGO_DATABASE: studio_test
       JWT_ACCESS_SECRET: ci-access-secret-at-least-long-enough
       JWT_REFRESH_SECRET: ci-refresh-secret-at-least-long-enough
       JWT_ACCESS_TTL: 15m
@@ -42,7 +43,7 @@ jobs:
           cat > .env <<'EOF'
           MONGO_ROOT_USERNAME=studio_admin
           MONGO_ROOT_PASSWORD=change-me
-          MONGO_DATABASE=studio
+          MONGO_DATABASE=studio_test
           EOF
 
       - name: Start MongoDB
@@ -90,11 +91,52 @@ jobs:
       - name: Build web
         run: npm --prefix apps/web run build
 
+      - name: Create production RC compose env
+        run: |
+          mkdir -p .codex-run
+          cat > .codex-run/.env.production.test <<'EOF'
+          NODE_ENV=production
+          STUDIO_DOMAIN=studio-rc.local
+          ADMIN_DOMAIN=admin.studio-rc.local
+          NEXT_PUBLIC_SITE_URL=https://studio-rc.local
+          NEXT_PUBLIC_API_URL=/api/v1
+          API_INTERNAL_URL=http://api:4000/api/v1
+          MONGO_ROOT_USERNAME=studio_root
+          MONGO_ROOT_PASSWORD=rc-root-password-64-characters-long-for-ci-only
+          MONGO_APP_USERNAME=studio_app
+          MONGO_APP_PASSWORD=rc-app-password-64-characters-long-for-ci-only
+          MONGO_DATABASE=studio
+          MONGO_HOST=mongodb
+          MONGO_PORT=27017
+          MONGO_AUTH_SOURCE=studio
+          JWT_ACCESS_SECRET=rc-access-secret-64-characters-long-for-ci-only
+          JWT_REFRESH_SECRET=rc-refresh-secret-64-characters-long-for-ci-only
+          JWT_ACCESS_TTL=15m
+          JWT_REFRESH_TTL=30d
+          ADMIN_SEED_NAME=Studio Admin
+          ADMIN_SEED_EMAIL=admin@studio.local
+          ADMIN_SEED_PASSWORD=rc-admin-password-64-characters-long-for-ci-only
+          STUDIO_TIMEZONE=Asia/Ho_Chi_Minh
+          CORS_ORIGINS=https://studio-rc.local,https://admin.studio-rc.local
+          UPLOAD_DIR=/app/uploads
+          MAX_UPLOAD_MB=25
+          MAX_UPLOAD_FILES=20
+          MEDIA_URL_PREFIX=/uploads
+          COOKIE_SECURE=true
+          TRUST_PROXY=true
+          SWAGGER_ENABLED=false
+          SERVE_UPLOADS=false
+          BACKUP_RETENTION_DAYS=14
+          BACKUP_INTERVAL_SECONDS=86400
+          CERTBOT_EMAIL=admin@studio-rc.local
+          CERTBOT_IMAGE=certbot/certbot:v2.11.0
+          EOF
+
       - name: Validate production compose
-        run: docker compose --env-file .env.production.example -f docker-compose.prod.yml config
+        run: docker compose --env-file .codex-run/.env.production.test -f docker-compose.prod.yml config
 
       - name: Build production images
-        run: docker compose --env-file .env.production.example -f docker-compose.prod.yml build
+        run: docker compose --env-file .codex-run/.env.production.test -f docker-compose.prod.yml build
 
       - name: Stop MongoDB
         if: always()

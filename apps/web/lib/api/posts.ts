@@ -62,6 +62,8 @@ export async function getPosts(params: {
   tag?: string;
   featured?: boolean;
   search?: string;
+}, options?: {
+  cache?: RequestCache;
 }): Promise<PostListResponse | null> {
   const searchParams = new URLSearchParams();
 
@@ -90,13 +92,16 @@ export async function getPosts(params: {
   }
 
   const query = searchParams.toString();
+  const requestOptions = options?.cache
+    ? { cache: options.cache }
+    : {
+        next: {
+          revalidate: 60,
+        },
+      };
   const response = await fetch(
     `${getApiBaseUrl()}/posts${query ? `?${query}` : ""}`,
-    {
-      next: {
-        revalidate: 60,
-      },
-    },
+    requestOptions,
   );
 
   if (!response.ok) {

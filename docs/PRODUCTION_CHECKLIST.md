@@ -1,9 +1,19 @@
 # Production Checklist
 
+Use `[ ]` until the item is actually verified. Items marked `MANUAL` require a
+real server, real domain, or repository setting.
+
+- [ ] MANUAL: GitHub default branch is `main`.
+- [ ] MANUAL: Optional branch protection is configured for `main`.
+- [ ] MANUAL: Repository visibility is appropriate for commercial/private code.
 - [ ] DNS records point `STUDIO_DOMAIN` and `ADMIN_DOMAIN` to the server.
 - [ ] `.env.production` exists on the server and is not tracked.
+- [ ] `.env.production` has no `CHANGE_ME`, `change-this`, `placeholder`, or
+      `example` runtime values.
 - [ ] Mongo root and app passwords are strong.
 - [ ] JWT access and refresh secrets are long random values.
+- [ ] `NEXT_PUBLIC_SITE_URL` points to the real public studio domain.
+- [ ] Admin build uses `NEXT_PUBLIC_SITE_URL` for preview links.
 - [ ] `COOKIE_SECURE=true` for real HTTPS production.
 - [ ] `SWAGGER_ENABLED=false` in production.
 - [ ] `SERVE_UPLOADS=false` in production.

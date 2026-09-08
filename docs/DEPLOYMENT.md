@@ -36,6 +36,8 @@ Production uses `docker-compose.prod.yml`.
 
    Set real domains, strong Mongo/JWT/admin seed secrets, and `CERTBOT_EMAIL`.
    Do not commit `.env.production`.
+   The production API rejects placeholder-like values such as `CHANGE_ME`,
+   `change-this`, `placeholder`, and `example` at startup.
 
 4. Prepare persistent directories.
 
@@ -162,3 +164,7 @@ Do not use `down -v` for normal updates.
   `API_INTERNAL_URL=http://api:4000/api/v1`.
 - Secure cookies require HTTPS. For local HTTP smoke tests only, use
   `COOKIE_SECURE=false` in an untracked override env.
+- If GitHub still uses `master` as the default branch, manually change the
+  repository default branch to `main` and then verify Actions run on `main`.
+- Recommended repository settings: protect `main`, require CI before merge, and
+  disable force pushes where practical.

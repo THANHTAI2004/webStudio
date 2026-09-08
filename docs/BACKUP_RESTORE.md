@@ -2,6 +2,8 @@
 
 Production includes a `backup` service based on the Mongo 8 image. It runs
 `mongodump` and archives uploads into timestamped folders under `data/backups`.
+The image runs as UID/GID `1000:1000`; run
+`infrastructure/scripts/prepare-server.sh` so `data/backups` is writable.
 
 ## Automatic Backups
 

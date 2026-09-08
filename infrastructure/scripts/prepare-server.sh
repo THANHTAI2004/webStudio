@@ -3,8 +3,8 @@ set -Eeuo pipefail
 
 API_UID="${API_UID:-1000}"
 API_GID="${API_GID:-1000}"
-BACKUP_UID="${BACKUP_UID:-0}"
-BACKUP_GID="${BACKUP_GID:-0}"
+BACKUP_UID="${BACKUP_UID:-1000}"
+BACKUP_GID="${BACKUP_GID:-1000}"
 
 mkdir -p data/uploads data/backups data/certbot/www infrastructure/nginx/ssl
 

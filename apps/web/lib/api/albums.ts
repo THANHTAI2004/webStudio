@@ -75,6 +75,8 @@ export async function getAlbums(params: {
   category?: string;
   featured?: boolean;
   search?: string;
+}, options?: {
+  cache?: RequestCache;
 }): Promise<AlbumListResponse | null> {
   const searchParams = new URLSearchParams();
 
@@ -99,13 +101,16 @@ export async function getAlbums(params: {
   }
 
   const query = searchParams.toString();
+  const requestOptions = options?.cache
+    ? { cache: options.cache }
+    : {
+        next: {
+          revalidate: 60,
+        },
+      };
   const response = await fetch(
     `${getApiBaseUrl()}/albums${query ? `?${query}` : ""}`,
-    {
-      next: {
-        revalidate: 60,
-      },
-    },
+    requestOptions,
   );
 
   if (!response.ok) {

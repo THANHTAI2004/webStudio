@@ -44,6 +44,8 @@ development MongoDB compose file.
 - Backup/restore guide: `docs/BACKUP_RESTORE.md`
 - Security notes: `docs/SECURITY.md`
 - Launch checklist: `docs/PRODUCTION_CHECKLIST.md`
+- Release notes: `docs/RELEASE_NOTES_RC1.md`
+- Windows QA notes: `docs/LOCAL_QA_WINDOWS.md`
 
 Production services:
 
@@ -68,6 +70,10 @@ docker compose --env-file .env.production -f docker-compose.prod.yml stop
 Do not run `docker compose down -v` in production unless you intentionally want
 to remove persistent MongoDB data. Backups in `data/backups` should be copied to
 off-server storage for disaster recovery.
+
+Production API startup rejects missing placeholder-like secrets and Mongo app
+credentials. Copy `.env.production.example` to `.env.production` and replace all
+`CHANGE_ME` values before starting a real server.
 
 ## Health
 

@@ -13,6 +13,7 @@ import {
   parseCorsOrigins,
   parsePort,
   resolveUploadRoot,
+  validateProductionEnvironment,
 } from './config/env';
 import { ensureUploadDirectories } from './modules/media/media-storage.paths';
 import {
@@ -44,6 +45,18 @@ async function bootstrap() {
     !isProduction,
     'SWAGGER_ENABLED',
   );
+
+  validateProductionEnvironment({
+    NODE_ENV: configService.get<string>('NODE_ENV'),
+    JWT_ACCESS_SECRET: configService.get<string>('JWT_ACCESS_SECRET'),
+    JWT_REFRESH_SECRET: configService.get<string>('JWT_REFRESH_SECRET'),
+    CORS_ORIGINS: configService.get<string>('CORS_ORIGINS'),
+    MONGODB_URI: configService.get<string>('MONGODB_URI'),
+    MONGO_DATABASE: configService.get<string>('MONGO_DATABASE'),
+    MONGO_APP_USERNAME: configService.get<string>('MONGO_APP_USERNAME'),
+    MONGO_APP_PASSWORD: configService.get<string>('MONGO_APP_PASSWORD'),
+    MONGO_AUTH_SOURCE: configService.get<string>('MONGO_AUTH_SOURCE'),
+  });
 
   await ensureUploadDirectories(uploadRoot);
   app.getHttpAdapter().getInstance().disable('x-powered-by');

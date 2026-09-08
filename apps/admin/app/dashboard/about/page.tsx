@@ -21,6 +21,7 @@ import {
   updateAbout,
 } from "@/lib/api/about";
 import { withAuthRefresh } from "@/lib/api/session";
+import { getPublicUrl } from "@/lib/site-url";
 
 const maxPhilosophyItems = 8;
 const maxTeamMembers = 20;
@@ -874,12 +875,6 @@ function moveArrayItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
 
   nextItems.splice(nextIndex, 0, item);
   return nextItems;
-}
-
-function getPublicUrl(path: string): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  return new URL(path, siteUrl).toString();
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {

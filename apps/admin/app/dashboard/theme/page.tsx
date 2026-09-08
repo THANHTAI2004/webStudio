@@ -18,6 +18,7 @@ import {
   updateTheme,
 } from "@/lib/api/theme";
 import { withAuthRefresh } from "@/lib/api/session";
+import { getPublicUrl } from "@/lib/site-url";
 
 const colorFields: Array<{
   key: keyof AdminTheme["colors"];
@@ -519,12 +520,6 @@ function getFontStack(font: ThemeHeadingFont | ThemeBodyFont): string {
     default:
       return "Arial, Helvetica, sans-serif";
   }
-}
-
-function getPublicUrl(path: string): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  return new URL(path, siteUrl).toString();
 }
 
 function getErrorMessage(error: unknown, fallback: string): string {
