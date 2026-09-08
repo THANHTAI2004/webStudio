@@ -44,6 +44,10 @@ http://localhost:4000/api/docs
 
 - Admin login: http://localhost:3001/login
 - Admin dashboard: http://localhost:3001/dashboard
+- Admin home CMS: http://localhost:3001/dashboard/home
+- Admin about CMS: http://localhost:3001/dashboard/about
+- Admin theme: http://localhost:3001/dashboard/theme
+- Admin settings: http://localhost:3001/dashboard/settings
 - Admin album categories: http://localhost:3001/dashboard/album-categories
 - Admin albums: http://localhost:3001/dashboard/albums
 - Admin package categories: http://localhost:3001/dashboard/package-categories
@@ -66,6 +70,45 @@ Seed the initial admin:
 ```bash
 npm --prefix apps/api run seed:admin
 ```
+
+## Public Site Shell and CMS
+
+- Public home: http://localhost:3000/
+- Public about: http://localhost:3000/gioi-thieu
+
+The public web app uses global settings and theme from the API layout layer.
+Header, navigation visibility, footer content, favicon, global SEO defaults,
+and theme CSS variables are CMS-driven with fallback values when the API is not
+available.
+
+Singleton collections:
+
+- settings, key: default
+- themes, key: default
+- homepages, key: default
+- abouts, key: default
+
+Public CMS API:
+
+- GET /api/v1/settings/public
+- GET /api/v1/theme
+- GET /api/v1/home
+- GET /api/v1/about
+
+Admin CMS API:
+
+- GET /api/v1/admin/settings
+- PATCH /api/v1/admin/settings
+- GET /api/v1/admin/theme
+- PATCH /api/v1/admin/theme
+- GET /api/v1/admin/home
+- PATCH /api/v1/admin/home
+- GET /api/v1/admin/about
+- PATCH /api/v1/admin/about
+
+CMS media references are protected by MediaUsageService. Deleting media used by
+settings, homepage, or about returns MEDIA_IN_USE, alongside existing package,
+album, post, and location protections.
 
 ## Media Library
 

@@ -1,29 +1,73 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { ReactNode } from "react";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { getMediaAssetUrl } from "@/lib/api/client";
+import { getPublicSettings } from "@/lib/api/settings";
+import { getPublicTheme } from "@/lib/api/theme";
+import { getSiteUrl } from "@/lib/site-url";
+import { getThemeCssVariables } from "@/lib/theme";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getPublicSettings({ cache: "no-store" });
+  const title = settings.defaultSeo.title || settings.studioName;
+  const description =
+    settings.defaultSeo.description ||
+    settings.tagline ||
+    "Studio photography services.";
+  const metadataBase = getSiteUrl() ?? undefined;
+  const ogImage = settings.defaultSeo.ogImage;
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  return {
+    metadataBase,
+    title,
+    description,
+    icons: settings.favicon
+      ? [
+          {
+            url: getMediaAssetUrl(settings.favicon.url),
+          },
+        ]
+      : undefined,
+    openGraph: {
+      title,
+      description,
+      siteName: settings.studioName,
+      images: ogImage
+        ? [
+            {
+              url: getMediaAssetUrl(ogImage.url),
+              width: ogImage.width,
+              height: ogImage.height,
+              alt: ogImage.alt || settings.studioName,
+            },
+          ]
+        : undefined,
+    },
+  };
+}
 
-export const metadata: Metadata = {
-  title: "Studio Website",
-  description: "Studio Platform website",
-};
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: ReactNode;
+}>) {
+  const [settings, theme] = await Promise.all([
+    getPublicSettings({ cache: "no-store" }),
+    getPublicTheme({ cache: "no-store" }),
+  ]);
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="vi" className="h-full antialiased">
+      <body
+        className="site-shell flex min-h-screen flex-col"
+        style={getThemeCssVariables(theme)}
+      >
+        <SiteHeader settings={settings} />
+        <div className="flex-1">{children}</div>
+        <SiteFooter settings={settings} />
+      </body>
     </html>
   );
 }

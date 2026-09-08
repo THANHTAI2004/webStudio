@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
+import { AboutPage, AboutPageSchema } from '../about/schemas/about-page.schema';
 import { AuthModule } from '../auth/auth.module';
+import { HomePage, HomePageSchema } from '../home/schemas/home-page.schema';
 import {
   StudioPackage,
   StudioPackageSchema,
@@ -13,6 +15,7 @@ import {
   StudioLocationSchema,
 } from '../locations/schemas/location.schema';
 import { StudioPost, StudioPostSchema } from '../posts/schemas/post.schema';
+import { Setting, SettingSchema } from '../settings/schemas/setting.schema';
 import { createMulterOptions } from './media-upload.config';
 import { MediaController } from './media.controller';
 import { MediaProcessingService } from './media-processing.service';
@@ -50,6 +53,18 @@ import { MediaService } from './media.service';
       {
         name: StudioLocation.name,
         schema: StudioLocationSchema,
+      },
+      {
+        name: Setting.name,
+        schema: SettingSchema,
+      },
+      {
+        name: HomePage.name,
+        schema: HomePageSchema,
+      },
+      {
+        name: AboutPage.name,
+        schema: AboutPageSchema,
       },
     ]),
   ],
