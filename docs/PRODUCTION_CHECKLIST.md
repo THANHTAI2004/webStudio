@@ -1,0 +1,37 @@
+# Production Checklist
+
+- [ ] DNS records point `STUDIO_DOMAIN` and `ADMIN_DOMAIN` to the server.
+- [ ] `.env.production` exists on the server and is not tracked.
+- [ ] Mongo root and app passwords are strong.
+- [ ] JWT access and refresh secrets are long random values.
+- [ ] `COOKIE_SECURE=true` for real HTTPS production.
+- [ ] `SWAGGER_ENABLED=false` in production.
+- [ ] `SERVE_UPLOADS=false` in production.
+- [ ] `CORS_ORIGINS` includes only the public and admin HTTPS origins.
+- [ ] `bash infrastructure/scripts/prepare-server.sh` completed.
+- [ ] `data/uploads` is writable by the API container user.
+- [ ] `data/backups` is writable by the backup container.
+- [ ] `docker compose ... config` passes.
+- [ ] Images build successfully.
+- [ ] Stack starts and all healthchecks pass.
+- [ ] First admin is seeded only if needed.
+- [ ] Admin login works over HTTPS.
+- [ ] Media upload works.
+- [ ] Package create/edit/public pages work.
+- [ ] Album create/edit/public pages work.
+- [ ] Post create/edit/public pages work.
+- [ ] Booking form works.
+- [ ] Contact form works.
+- [ ] Locations list/detail pages work.
+- [ ] Homepage CMS renders.
+- [ ] About CMS renders.
+- [ ] Theme changes appear on public web.
+- [ ] Settings update header/footer/SEO.
+- [ ] `/robots.txt` and `/sitemap.xml` respond on the public domain.
+- [ ] Admin domain has noindex behavior.
+- [ ] `/api/v1/health` responds without secrets.
+- [ ] Nginx `/healthz` responds.
+- [ ] Automatic backups create timestamp folders.
+- [ ] A restore has been tested on disposable infrastructure.
+- [ ] Backups are copied off-server.
+- [ ] Logs rotate with `json-file` max-size/max-file.

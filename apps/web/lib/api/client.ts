@@ -17,6 +17,10 @@ export function getPublicApiOrigin(): string {
   const browserApiUrl = process.env.NEXT_PUBLIC_API_URL;
   const baseUrl = browserApiUrl?.trim() ? browserApiUrl : getApiBaseUrl();
 
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    return "";
+  }
+
   return new URL(baseUrl).origin;
 }
 

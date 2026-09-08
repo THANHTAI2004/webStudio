@@ -5,6 +5,10 @@ dist/
 .env
 .env.local
 .env.production
+.env.production.local
+*.pem
+*.key
+*.crt
 
 *.log
 *.tsbuildinfo
@@ -14,6 +18,10 @@ data/uploads/*
 
 data/backups/*
 !data/backups/.gitkeep
+
+data/certbot/
+
+.codex-run/
 
 .DS_Store
 Thumbs.db

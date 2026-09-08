@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    env:
+      MONGODB_URI: mongodb://studio_admin:change-me@127.0.0.1:27017/studio?authSource=admin
+      JWT_ACCESS_SECRET: ci-access-secret-at-least-long-enough
+      JWT_REFRESH_SECRET: ci-refresh-secret-at-least-long-enough
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 30d
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
+      UPLOAD_DIR: ../../data/uploads
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+      API_INTERNAL_URL: http://localhost:4000/api/v1
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            apps/api/package-lock.json
+            apps/admin/package-lock.json
+            apps/web/package-lock.json
+
+      - name: Create development compose env
+        run: |
+          cat > .env <<'EOF'
+          MONGO_ROOT_USERNAME=studio_admin
+          MONGO_ROOT_PASSWORD=change-me
+          MONGO_DATABASE=studio
+          EOF
+
+      - name: Start MongoDB
+        run: docker compose up -d mongodb
+
+      - name: Wait for MongoDB
+        run: |
+          for i in {1..30}; do
+            status="$(docker inspect --format='{{json .State.Health.Status}}' studio_mongodb || true)"
+            if [ "$status" = '"healthy"' ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs mongodb
+          exit 1
+
+      - name: Install API dependencies
+        run: npm --prefix apps/api ci
+
+      - name: Lint API
+        run: npm --prefix apps/api run lint
+
+      - name: Test API
+        run: npm --prefix apps/api run test:e2e -- --runInBand
+
+      - name: Build API
+        run: npm --prefix apps/api run build
+
+      - name: Install admin dependencies
+        run: npm --prefix apps/admin ci
+
+      - name: Lint admin
+        run: npm --prefix apps/admin run lint
+
+      - name: Build admin
+        run: npm --prefix apps/admin run build
+
+      - name: Install web dependencies
+        run: npm --prefix apps/web ci
+
+      - name: Lint web
+        run: npm --prefix apps/web run lint
+
+      - name: Build web
+        run: npm --prefix apps/web run build
+
+      - name: Validate production compose
+        run: docker compose --env-file .env.production.example -f docker-compose.prod.yml config
+
+      - name: Build production images
+        run: docker compose --env-file .env.production.example -f docker-compose.prod.yml build
+
+      - name: Stop MongoDB
+        if: always()
+        run: docker compose stop mongodb

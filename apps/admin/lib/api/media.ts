@@ -125,8 +125,11 @@ export function getMediaAssetUrl(url: string): string {
     return url;
   }
 
-  const apiOrigin = new URL(API_BASE_URL).origin;
   const normalizedPath = url.startsWith('/') ? url : `/${url}`;
 
-  return `${apiOrigin}${normalizedPath}`;
+  if (!/^https?:\/\//i.test(API_BASE_URL)) {
+    return normalizedPath;
+  }
+
+  return `${new URL(API_BASE_URL).origin}${normalizedPath}`;
 }

@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -20,6 +21,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
+import { parseBoolean } from '../../config/env';
 import type { PublicAdmin } from '../admins/schemas/admin.schema';
 import {
   ACCESS_TOKEN_COOKIE,
@@ -50,7 +52,10 @@ interface SuccessResponse {
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -215,7 +220,11 @@ export class AuthController {
   private getBaseCookieOptions() {
     return {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: parseBoolean(
+        this.configService.get<string>('COOKIE_SECURE'),
+        this.configService.get<string>('NODE_ENV') === 'production',
+        'COOKIE_SECURE',
+      ),
       sameSite: 'strict' as const,
       path: '/',
     };

@@ -32,6 +32,43 @@ npm run build:admin
 npm run build:api
 ```
 
+## Production Foundation
+
+Production infrastructure lives alongside the apps without replacing the
+development MongoDB compose file.
+
+- Compose: `docker-compose.prod.yml`
+- Local HTTP smoke override: `docker-compose.prod.local.yml`
+- Production env template: `.env.production.example`
+- Deployment guide: `docs/DEPLOYMENT.md`
+- Backup/restore guide: `docs/BACKUP_RESTORE.md`
+- Security notes: `docs/SECURITY.md`
+- Launch checklist: `docs/PRODUCTION_CHECKLIST.md`
+
+Production services:
+
+- nginx: exposes only `80` and `443`
+- web: Next.js standalone on container port `3000`
+- admin: Next.js standalone on container port `3001`
+- api: NestJS on container port `4000`
+- mongodb: private database network only
+- backup: scheduled MongoDB and upload backups
+
+Common production commands:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.prod.yml config
+docker compose --env-file .env.production -f docker-compose.prod.yml build
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
+docker compose --env-file .env.production -f docker-compose.prod.yml logs -f
+docker compose --env-file .env.production -f docker-compose.prod.yml stop
+```
+
+Do not run `docker compose down -v` in production unless you intentionally want
+to remove persistent MongoDB data. Backups in `data/backups` should be copied to
+off-server storage for disaster recovery.
+
 ## Health
 
 http://localhost:4000/api/v1/health

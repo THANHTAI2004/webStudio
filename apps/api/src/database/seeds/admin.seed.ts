@@ -5,6 +5,7 @@ import {
   Admin,
   AdminSchema,
 } from '../../modules/admins/schemas/admin.schema';
+import { buildMongoUriFromParts } from '../../config/env';
 import { normalizeAdminEmail } from '../../modules/admins/admins.service';
 
 loadEnv({ quiet: true });
@@ -14,10 +15,21 @@ const DEFAULT_ADMIN_EMAIL = 'admin@studio.local';
 const DEFAULT_ADMIN_PASSWORD = 'change-this-password';
 
 async function seedAdmin(): Promise<void> {
-  const mongoUri = process.env.MONGODB_URI?.trim();
+  const mongoUri =
+    process.env.MONGODB_URI?.trim() ||
+    buildMongoUriFromParts({
+      host: process.env.MONGO_HOST,
+      port: process.env.MONGO_PORT,
+      database: process.env.MONGO_DATABASE,
+      username: process.env.MONGO_APP_USERNAME,
+      password: process.env.MONGO_APP_PASSWORD,
+      authSource: process.env.MONGO_AUTH_SOURCE,
+    });
 
   if (!mongoUri) {
-    throw new Error('MONGODB_URI is required to seed the admin user.');
+    throw new Error(
+      'MONGODB_URI or MONGO_* application database variables are required to seed the admin user.',
+    );
   }
 
   const adminName =
