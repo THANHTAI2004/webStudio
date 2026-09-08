@@ -51,6 +51,8 @@ http://localhost:4000/api/docs
 - Admin post categories: http://localhost:3001/dashboard/post-categories
 - Admin posts: http://localhost:3001/dashboard/posts
 - Admin bookings: http://localhost:3001/dashboard/bookings
+- Admin locations: http://localhost:3001/dashboard/locations
+- Admin contacts: http://localhost:3001/dashboard/contacts
 
 Auth endpoints:
 
@@ -163,6 +165,8 @@ Public post API:
 ## Bookings
 
 - Public booking: http://localhost:3000/dat-lich
+- Public booking with package: http://localhost:3000/dat-lich?package=:packageSlug
+- Public booking with location: http://localhost:3000/dat-lich?location=:locationSlug
 - Admin booking: http://localhost:3001/dashboard/bookings
 
 Public booking API:
@@ -186,3 +190,63 @@ Booking status workflow:
 - shooting -> deposit, completed, cancelled
 - completed -> shooting
 - cancelled -> new, contacted
+
+Booking public create uses an in-memory 5 requests / 10 minutes / IP limiter.
+
+## Locations
+
+- Public locations: http://localhost:3000/dia-diem
+- Public location detail: http://localhost:3000/dia-diem/:slug
+- Admin locations: http://localhost:3001/dashboard/locations
+- New location: http://localhost:3001/dashboard/locations/new
+- Edit location: http://localhost:3001/dashboard/locations/:id/edit
+
+Admin location API:
+
+- GET /api/v1/admin/locations
+- POST /api/v1/admin/locations
+- GET /api/v1/admin/locations/:id
+- PATCH /api/v1/admin/locations/:id
+- DELETE /api/v1/admin/locations/:id
+
+Public location API:
+
+- GET /api/v1/locations
+- GET /api/v1/locations/:slug
+
+Location media references store only media ids:
+
+- coverMediaId
+- galleryMediaIds
+- seo.ogImageMediaId
+
+Deleting media used by a location is blocked with MEDIA_IN_USE, matching package,
+album, and post protections.
+
+## Contacts
+
+- Public contact: http://localhost:3000/lien-he
+- Admin contact inbox: http://localhost:3001/dashboard/contacts
+- Admin contact detail: http://localhost:3001/dashboard/contacts/:id
+
+Public contact API:
+
+- POST /api/v1/contacts
+
+Admin contact API:
+
+- GET /api/v1/admin/contacts
+- GET /api/v1/admin/contacts/:id
+- PATCH /api/v1/admin/contacts/:id
+
+Contact statuses:
+
+- new
+- read
+- replied
+- archived
+
+Public contact create uses the shared in-memory 5 requests / 10 minutes / IP
+limiter. This is acceptable for the current single API instance deployment; a
+multi-instance production deployment should move this limiter to Redis or an
+equivalent shared store.

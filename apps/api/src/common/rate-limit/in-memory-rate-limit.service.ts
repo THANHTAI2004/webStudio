@@ -6,7 +6,7 @@ interface Bucket {
 }
 
 @Injectable()
-export class BookingRateLimitService {
+export class InMemoryRateLimitService {
   private readonly buckets = new Map<string, Bucket>();
 
   consume(key: string, limit: number, windowMs: number): boolean {

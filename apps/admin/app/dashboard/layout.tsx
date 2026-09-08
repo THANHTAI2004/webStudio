@@ -10,6 +10,8 @@ import { withAuthRefresh } from "@/lib/api/session";
 const navigation = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/bookings", label: "\u0110\u1eb7t l\u1ecbch" },
+  { href: "/dashboard/locations", label: "\u0110\u1ecba \u0111i\u1ec3m" },
+  { href: "/dashboard/contacts", label: "Li\u00ean h\u1ec7" },
   { href: "/dashboard/media", label: "Media" },
   { href: "/dashboard/posts", label: "Tin t\u1ee9c" },
   { href: "/dashboard/post-categories", label: "Danh m\u1ee5c tin" },

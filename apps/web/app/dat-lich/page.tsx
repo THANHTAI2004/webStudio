@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getLocations } from "@/lib/api/locations";
 import { getPackages } from "@/lib/api/packages";
 import { BookingForm } from "./booking-form";
 
@@ -15,12 +16,21 @@ interface BookingPageProps {
 export default async function BookingPage({ searchParams }: BookingPageProps) {
   const resolvedSearchParams = (await searchParams) ?? {};
   const packageSlug = getFirstParam(resolvedSearchParams.package);
-  const packageResponse = await getPackages({
-    page: 1,
-    limit: 100,
-  }, {
-    cache: "no-store",
-  });
+  const locationSlug = getFirstParam(resolvedSearchParams.location);
+  const [packageResponse, locations] = await Promise.all([
+    getPackages(
+      {
+        page: 1,
+        limit: 100,
+      },
+      {
+        cache: "no-store",
+      },
+    ),
+    getLocations({
+      cache: "no-store",
+    }),
+  ]);
 
   return (
     <main className="min-h-screen bg-stone-50 text-zinc-950">
@@ -30,19 +40,20 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
             Studio
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-normal">
-            \u0110\u1eb7t l\u1ecbch ch\u1ee5p
+            {"\u0110\u1eb7t l\u1ecbch ch\u1ee5p"}
           </h1>
           <p className="mt-5 text-base leading-7 text-zinc-600">
-            Ch\u1ecdn g\u00f3i ch\u1ee5p, th\u1eddi gian mong mu\u1ed1n v\u00e0
-            \u0111\u1ec3 l\u1ea1i th\u00f4ng tin li\u00ean h\u1ec7. Studio
-            s\u1ebd ph\u1ea3n h\u1ed3i \u0111\u1ec3 x\u00e1c nh\u1eadn
-            l\u1ecbch.
+            {
+              "Ch\u1ecdn g\u00f3i ch\u1ee5p, th\u1eddi gian mong mu\u1ed1n v\u00e0 \u0111\u1ec3 l\u1ea1i th\u00f4ng tin li\u00ean h\u1ec7. Studio s\u1ebd ph\u1ea3n h\u1ed3i \u0111\u1ec3 x\u00e1c nh\u1eadn l\u1ecbch."
+            }
           </p>
         </header>
 
         <BookingForm
           packages={packageResponse?.data ?? []}
+          locations={locations}
           preselectedPackageSlug={packageSlug}
+          preselectedLocationSlug={locationSlug}
         />
       </section>
     </main>

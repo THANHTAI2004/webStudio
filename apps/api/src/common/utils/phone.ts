@@ -1,4 +1,4 @@
-export function normalizeBookingPhone(phone: string): string | null {
+export function normalizePhone(phone: string): string | null {
   const collapsedPhone = phone.trim().replace(/[\s().-]/g, '');
 
   if (!/^\+?\d+$/.test(collapsedPhone)) {

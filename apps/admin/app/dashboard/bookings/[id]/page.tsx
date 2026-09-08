@@ -226,7 +226,7 @@ export default function BookingDetailPage() {
             href="/dashboard/bookings"
             className="text-sm font-semibold text-emerald-700 hover:text-emerald-800"
           >
-            \u0110\u1eb7t l\u1ecbch
+            {"\u0110\u1eb7t l\u1ecbch"}
           </Link>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
             {booking.code}

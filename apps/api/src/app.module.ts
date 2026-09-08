@@ -7,7 +7,9 @@ import { AlbumCategoriesModule } from './modules/album-categories/album-categori
 import { AlbumsModule } from './modules/albums/albums.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
+import { ContactsModule } from './modules/contacts/contacts.module';
 import { HealthModule } from './modules/health/health.module';
+import { LocationsModule } from './modules/locations/locations.module';
 import { MediaModule } from './modules/media/media.module';
 import { PackageCategoriesModule } from './modules/package-categories/package-categories.module';
 import { PackagesModule } from './modules/packages/packages.module';
@@ -29,7 +31,9 @@ import { PostsModule } from './modules/posts/posts.module';
     AlbumsModule,
     AuthModule,
     BookingsModule,
+    ContactsModule,
     HealthModule,
+    LocationsModule,
     MediaModule,
     PackageCategoriesModule,
     PackagesModule,

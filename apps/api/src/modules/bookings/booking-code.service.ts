@@ -1,7 +1,7 @@
-import { randomBytes } from 'node:crypto';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { createReadableCode } from '../../common/utils/readable-code';
 import { Booking } from './schemas/booking.schema';
 
 const MAX_CODE_RETRIES = 8;
@@ -14,15 +14,16 @@ export class BookingCodeService {
   ) {}
 
   async createUniqueCode(date: string): Promise<string> {
-    for (let attempt = 0; attempt < MAX_CODE_RETRIES; attempt += 1) {
-      const code = `BK-${date.replaceAll('-', '')}-${randomBytes(3)
-        .toString('hex')
-        .toUpperCase()}`;
-      const existingBooking = await this.bookingModel.exists({ code }).exec();
+    const code = await createReadableCode(
+      'BK',
+      date,
+      async (candidate) =>
+        Boolean(await this.bookingModel.exists({ code: candidate }).exec()),
+      MAX_CODE_RETRIES,
+    );
 
-      if (!existingBooking) {
-        return code;
-      }
+    if (code) {
+      return code;
     }
 
     throw new InternalServerErrorException({

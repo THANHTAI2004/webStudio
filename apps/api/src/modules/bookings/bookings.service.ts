@@ -6,19 +6,19 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Admin } from '../admins/schemas/admin.schema';
-import {
-  StudioPackage,
-  StudioPackageDocument,
-} from '../packages/schemas/package.schema';
 import {
   getInclusiveDaysBetween,
   getTodayInTimezone,
   isValidLocalDate,
   parseCreatedDateBound,
-} from './booking-date.utils';
+} from '../../common/utils/local-date';
+import { normalizePhone } from '../../common/utils/phone';
+import { Admin } from '../admins/schemas/admin.schema';
+import {
+  StudioPackage,
+  StudioPackageDocument,
+} from '../packages/schemas/package.schema';
 import { BookingCodeService } from './booking-code.service';
-import { normalizeBookingPhone } from './booking-phone.utils';
 import {
   assertBookingStatusTransition,
   getAllowedBookingStatusTransitions,
@@ -374,7 +374,7 @@ export class BookingsService {
   }
 
   private normalizePhoneOrFail(phone: string): string {
-    const normalizedPhone = normalizeBookingPhone(phone);
+    const normalizedPhone = normalizePhone(phone);
 
     if (!normalizedPhone) {
       throw new BadRequestException({
@@ -392,7 +392,7 @@ export class BookingsService {
     if (query.search?.trim()) {
       const search = query.search.trim();
       const escapedSearch = escapeRegex(search);
-      const normalizedPhone = normalizeBookingPhone(search);
+      const normalizedPhone = normalizePhone(search);
 
       filter.$or = [
         { code: { $regex: escapedSearch, $options: 'i' } },

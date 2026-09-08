@@ -8,11 +8,15 @@ import {
   type PublicBooking,
 } from "@/lib/api/bookings";
 import { getMediaAssetUrl } from "@/lib/api/client";
+import type { PublicLocationListItem } from "@/lib/api/locations";
 import type { PublicPackageListItem } from "@/lib/api/packages";
+import { formatBookingLocation } from "@/lib/location-format";
 
 interface BookingFormProps {
   packages: PublicPackageListItem[];
+  locations: PublicLocationListItem[];
   preselectedPackageSlug?: string;
+  preselectedLocationSlug?: string;
 }
 
 const currencyFormatter = new Intl.NumberFormat("vi-VN", {
@@ -22,10 +26,15 @@ const currencyFormatter = new Intl.NumberFormat("vi-VN", {
 
 export function BookingForm({
   packages,
+  locations,
   preselectedPackageSlug,
+  preselectedLocationSlug,
 }: BookingFormProps) {
   const preselectedPackage = packages.find(
     (item) => item.slug === preselectedPackageSlug,
+  );
+  const preselectedLocation = locations.find(
+    (item) => item.slug === preselectedLocationSlug,
   );
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -36,7 +45,12 @@ export function BookingForm({
   const [shootDate, setShootDate] = useState("");
   const [shootTime, setShootTime] = useState("");
   const [peopleCount, setPeopleCount] = useState("2");
-  const [location, setLocation] = useState("");
+  const [selectedLocationId, setSelectedLocationId] = useState(
+    preselectedLocation?.id ?? "custom",
+  );
+  const [location, setLocation] = useState(
+    preselectedLocation ? formatBookingLocation(preselectedLocation) : "",
+  );
   const [customerNote, setCustomerNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +105,7 @@ export function BookingForm({
       setShootDate("");
       setShootTime("");
       setPeopleCount("2");
-      setLocation("");
+      setLocation(getLocationTextForSelection(selectedLocationId, locations));
       setCustomerNote("");
     } catch (caughtError) {
       setError(getFriendlyErrorMessage(caughtError));
@@ -104,7 +118,7 @@ export function BookingForm({
     return (
       <section className="rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
         <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-          \u0110\u1eb7t l\u1ecbch th\u00e0nh c\u00f4ng
+          {"\u0110\u1eb7t l\u1ecbch th\u00e0nh c\u00f4ng"}
         </p>
         <h2 className="mt-2 text-2xl font-semibold">{confirmation.code}</h2>
         <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
@@ -120,15 +134,16 @@ export function BookingForm({
           <SummaryItem label="Tr\u1ea1ng th\u00e1i" value="M\u1edbi" />
         </dl>
         <p className="mt-6 rounded-md bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-          Studio s\u1ebd li\u00ean h\u1ec7 v\u1edbi b\u1ea1n \u0111\u1ec3
-          x\u00e1c nh\u1eadn l\u1ecbch.
+          {
+            "Studio s\u1ebd li\u00ean h\u1ec7 v\u1edbi b\u1ea1n \u0111\u1ec3 x\u00e1c nh\u1eadn l\u1ecbch."
+          }
         </p>
         <button
           type="button"
           onClick={() => setConfirmation(null)}
           className="mt-6 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-zinc-50"
         >
-          G\u1eedi y\u00eau c\u1ea7u kh\u00e1c
+          {"G\u1eedi y\u00eau c\u1ea7u kh\u00e1c"}
         </button>
       </section>
     );
@@ -166,7 +181,7 @@ export function BookingForm({
             onChange={setEmail}
           />
           <label className="block text-sm font-medium text-zinc-700">
-            G\u00f3i ch\u1ee5p
+            {"G\u00f3i ch\u1ee5p"}
             <select
               value={packageId}
               onChange={(event) => setPackageId(event.target.value)}
@@ -175,7 +190,7 @@ export function BookingForm({
               className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-zinc-100"
             >
               {packages.length === 0 ? (
-                <option value="">Ch\u01b0a c\u00f3 g\u00f3i ch\u1ee5p</option>
+                <option value="">{"Ch\u01b0a c\u00f3 g\u00f3i ch\u1ee5p"}</option>
               ) : null}
               {packages.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -209,6 +224,28 @@ export function BookingForm({
             max={50}
             required
           />
+          <label className="block text-sm font-medium text-zinc-700">
+            {"\u0110\u1ecba \u0111i\u1ec3m Studio"}
+            <select
+              value={selectedLocationId}
+              onChange={(event) => {
+                const nextLocationId = event.target.value;
+
+                setSelectedLocationId(nextLocationId);
+                setLocation(getLocationTextForSelection(nextLocationId, locations));
+              }}
+              className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            >
+              <option value="custom">
+                {"Kh\u00e1c / Theo y\u00eau c\u1ea7u"}
+              </option>
+              {locations.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </label>
           <TextField
             label="\u0110\u1ecba \u0111i\u1ec3m mong mu\u1ed1n"
             value={location}
@@ -223,7 +260,7 @@ export function BookingForm({
         ) : null}
 
         <label className="block text-sm font-medium text-zinc-700">
-          Ghi ch\u00fa
+          {"Ghi ch\u00fa"}
           <textarea
             value={customerNote}
             onChange={(event) => setCustomerNote(event.target.value)}
@@ -345,6 +382,19 @@ function formatDate(value: string): string {
   return new Intl.DateTimeFormat("vi-VN", {
     dateStyle: "medium",
   }).format(new Date(`${value}T00:00:00`));
+}
+
+function getLocationTextForSelection(
+  locationId: string,
+  locations: PublicLocationListItem[],
+): string {
+  if (locationId === "custom") {
+    return "";
+  }
+
+  const selectedLocation = locations.find((item) => item.id === locationId);
+
+  return selectedLocation ? formatBookingLocation(selectedLocation) : "";
 }
 
 function getFriendlyErrorMessage(error: unknown): string {

@@ -188,7 +188,7 @@ export default function BookingsPage() {
             Booking
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            \u0110\u1eb7t l\u1ecbch
+            {"\u0110\u1eb7t l\u1ecbch"}
           </h1>
         </div>
 

@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { StudioAlbum } from '../albums/schemas/album.schema';
+import { StudioLocation } from '../locations/schemas/location.schema';
 import { StudioPackage } from '../packages/schemas/package.schema';
 import { StudioPost } from '../posts/schemas/post.schema';
 
@@ -14,6 +15,8 @@ export class MediaUsageService {
     private readonly albumModel: Model<StudioAlbum>,
     @InjectModel(StudioPost.name)
     private readonly postModel: Model<StudioPost>,
+    @InjectModel(StudioLocation.name)
+    private readonly locationModel: Model<StudioLocation>,
   ) {}
 
   async assertMediaCanBeDeleted(mediaId: Types.ObjectId): Promise<void> {
@@ -39,6 +42,15 @@ export class MediaUsageService {
       this.postModel
         .exists({
           $or: [{ coverMediaId: mediaId }, { 'seo.ogImageMediaId': mediaId }],
+        })
+        .exec(),
+      this.locationModel
+        .exists({
+          $or: [
+            { coverMediaId: mediaId },
+            { galleryMediaIds: mediaId },
+            { 'seo.ogImageMediaId': mediaId },
+          ],
         })
         .exec(),
     ];
