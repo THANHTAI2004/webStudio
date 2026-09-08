@@ -14,6 +14,12 @@ import {
   createAlbum,
   updateAlbum,
 } from "@/lib/api/albums";
+import {
+  emptyLabel,
+  getAdminErrorMessage,
+  publishStatusLabels,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 interface AlbumFormProps {
@@ -71,7 +77,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
     setNotice(null);
 
     if (!categoryId) {
-      setError("Please create and choose an album category first.");
+      setError("Vui lòng tạo và chọn danh mục album trước.");
       return;
     }
 
@@ -89,7 +95,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
           () => updateAlbum(initialAlbum.id, payload),
           () => router.replace("/login"),
         );
-        setNotice("Album saved.");
+        setNotice("Đã cập nhật album.");
         router.refresh();
       } else {
         const response = await withAuthRefresh(
@@ -102,7 +108,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
         }
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save album."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSubmitting(false);
     }
@@ -112,19 +118,19 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
     const parsedSortOrder = sortOrder.trim() ? Number(sortOrder) : 0;
 
     if (!Number.isInteger(parsedSortOrder)) {
-      setError("Sort order must be an integer.");
+      setError("Thứ tự phải là số nguyên.");
       return null;
     }
 
     if (gallery.length > MAX_GALLERY_IMAGES) {
-      setError(`Gallery can contain up to ${MAX_GALLERY_IMAGES} images.`);
+      setError(`Bộ sưu tập có thể có tối đa ${MAX_GALLERY_IMAGES} ảnh.`);
       return null;
     }
 
     const galleryIds = gallery.map((item) => item.id);
 
     if (new Set(galleryIds).size !== galleryIds.length) {
-      setError("Gallery cannot contain duplicate images.");
+      setError("Bộ sưu tập không được có ảnh trùng.");
       return null;
     }
 
@@ -181,10 +187,10 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
       ) : null}
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Basic</h2>
+        <h2 className="text-lg font-semibold">Thông tin cơ bản</h2>
         <div className="space-y-5">
           <label className="block text-sm font-medium text-zinc-700">
-            Title
+            Tiêu đề
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -195,17 +201,20 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Slug
+            Đường dẫn
             <input
               value={slug}
               onChange={(event) => setSlug(event.target.value)}
-              placeholder="Leave empty to generate from title"
+              placeholder="Để trống để hệ thống tự tạo từ tiêu đề"
               className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
+            <span className="mt-2 block text-xs font-normal text-zinc-500">
+              Đường dẫn dùng trên website, ví dụ: album-anh-cuoi-da-lat.
+            </span>
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Category
+            Danh mục
             <select
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
@@ -223,10 +232,10 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Information</h2>
+        <h2 className="text-lg font-semibold">Nội dung</h2>
         <div className="space-y-5">
           <label className="block text-sm font-medium text-zinc-700">
-            Description
+            Mô tả
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
@@ -237,7 +246,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Content
+            Nội dung
             <textarea
               value={content}
               onChange={(event) => setContent(event.target.value)}
@@ -249,7 +258,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
 
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block text-sm font-medium text-zinc-700">
-              Shooting Date
+              Ngày chụp
               <input
                 type="date"
                 value={shootingDate}
@@ -259,7 +268,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
             </label>
 
             <label className="block text-sm font-medium text-zinc-700">
-              Location
+              Địa điểm
               <input
                 value={location}
                 onChange={(event) => setLocation(event.target.value)}
@@ -272,11 +281,11 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Media</h2>
+        <h2 className="text-lg font-semibold">Hình ảnh</h2>
         <div className="space-y-6">
-          <MediaBlock title="Cover" items={cover} onClear={setCover} />
+          <MediaBlock title="Ảnh bìa" items={cover} onClear={setCover} />
           <MediaPicker
-            title="Choose cover"
+            title="Chọn ảnh bìa"
             mode="single"
             selected={cover}
             onChange={setCover}
@@ -285,20 +294,20 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-zinc-700">
-                Gallery ({gallery.length}/{MAX_GALLERY_IMAGES})
+                Bộ sưu tập ảnh ({gallery.length}/{MAX_GALLERY_IMAGES})
               </h3>
               <MediaPicker
-                title="Choose gallery"
+                title="Chọn ảnh"
                 mode="multiple"
                 selected={gallery}
                 onChange={setGallery}
                 maxSelection={MAX_GALLERY_IMAGES}
-                maxSelectionMessage={`Gallery can contain up to ${MAX_GALLERY_IMAGES} images.`}
+                maxSelectionMessage={`Bộ sưu tập có thể có tối đa ${MAX_GALLERY_IMAGES} ảnh.`}
               />
             </div>
             {gallery.length === 0 ? (
               <p className="rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-                No gallery images selected.
+                Chưa chọn ảnh nào.
               </p>
             ) : (
               <div className="space-y-3">
@@ -319,7 +328,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
                       disabled={index === 0}
                       className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                     >
-                      Move Up
+                      Di chuyển lên
                     </button>
                     <button
                       type="button"
@@ -327,7 +336,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
                       disabled={index === gallery.length - 1}
                       className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                     >
-                      Move Down
+                      Di chuyển xuống
                     </button>
                     <button
                       type="button"
@@ -338,7 +347,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
                       }
                       className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
                     >
-                      Remove
+                      Gỡ bỏ
                     </button>
                   </div>
                 ))}
@@ -349,10 +358,10 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Publishing</h2>
+        <h2 className="text-lg font-semibold">Hiển thị</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block text-sm font-medium text-zinc-700">
-            Status
+            Trạng thái
             <select
               value={status}
               onChange={(event) => setStatus(event.target.value as AlbumStatus)}
@@ -360,14 +369,14 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
             >
               {statuses.map((item) => (
                 <option key={item} value={item}>
-                  {item}
+                  {publishStatusLabels[item]}
                 </option>
               ))}
             </select>
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Sort Order
+            Thứ tự
             <input
               type="number"
               value={sortOrder}
@@ -383,7 +392,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
               onChange={(event) => setIsFeatured(event.target.checked)}
               className="h-4 w-4 rounded border-zinc-300 text-emerald-600"
             />
-            Featured
+            Nổi bật
           </label>
         </div>
       </section>
@@ -392,7 +401,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
         <h2 className="text-lg font-semibold">SEO</h2>
         <div className="space-y-5">
           <label className="block text-sm font-medium text-zinc-700">
-            SEO Title
+            Tiêu đề SEO
             <input
               value={seoTitle}
               onChange={(event) => setSeoTitle(event.target.value)}
@@ -402,7 +411,7 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            SEO Description
+            Mô tả SEO
             <textarea
               value={seoDescription}
               onChange={(event) => setSeoDescription(event.target.value)}
@@ -412,9 +421,13 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
             />
           </label>
 
-          <MediaBlock title="OG Image" items={seoImage} onClear={setSeoImage} />
+          <MediaBlock
+            title="Ảnh chia sẻ"
+            items={seoImage}
+            onClear={setSeoImage}
+          />
           <MediaPicker
-            title="Choose OG image"
+            title="Chọn ảnh chia sẻ"
             mode="single"
             selected={seoImage}
             onChange={setSeoImage}
@@ -427,14 +440,14 @@ export function AlbumForm({ categories, initialAlbum }: AlbumFormProps) {
           href="/dashboard/albums"
           className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
         >
-          Cancel
+          Hủy
         </Link>
         <button
           type="submit"
           disabled={isSubmitting}
           className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
-          {isSubmitting ? "Saving..." : "Save Album"}
+          {isSubmitting ? "Đang lưu..." : "Lưu album"}
         </button>
       </div>
     </form>
@@ -466,12 +479,12 @@ function MediaBlock({
             onClick={() => onClear([])}
             className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
           >
-            Remove
+            Gỡ bỏ
           </button>
         </div>
       ) : (
         <p className="rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-          No image selected.
+          {emptyLabel}
         </p>
       )}
     </div>
@@ -494,8 +507,4 @@ function MediaThumb({ item }: { item: MediaChoice }) {
 
 function formatDateInput(value: string | null | undefined): string {
   return value ? value.slice(0, 10) : "";
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

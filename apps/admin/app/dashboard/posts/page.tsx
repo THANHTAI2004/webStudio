@@ -15,7 +15,18 @@ import {
   type PostCategory,
   getPostCategories,
 } from "@/lib/api/post-categories";
+import {
+  deleteErrorMessage,
+  emptyLabel,
+  formatAdminDateTime,
+  getAdminErrorMessage,
+  loadErrorMessage,
+  publishStatusLabels,
+  unassignedLabel,
+  yesNoLabel,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const PAGE_SIZE = 20;
 
@@ -32,6 +43,8 @@ export default function PostsPage() {
   const [tag, setTag] = useState("");
   const [sort, setSort] = useState("createdAt:desc");
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<AdminPost | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const redirectToLogin = useCallback(() => {
@@ -69,7 +82,7 @@ export default function PostsPage() {
       setTotalPages(postResponse.pagination.totalPages);
       setCategories(categoryResponse.data);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load posts."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -85,20 +98,22 @@ export default function PostsPage() {
     };
   }, [loadData]);
 
-  async function handleDelete(post: AdminPost) {
-    const confirmed = window.confirm(`Delete post "${post.title}"?`);
-
-    if (!confirmed) {
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) {
       return;
     }
 
+    setIsDeleting(true);
     setError(null);
 
     try {
-      await withAuthRefresh(() => deletePost(post.id), redirectToLogin);
+      await withAuthRefresh(() => deletePost(deleteTarget.id), redirectToLogin);
+      setDeleteTarget(null);
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to delete post."));
+      setError(getAdminErrorMessage(caughtError, deleteErrorMessage));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -107,18 +122,26 @@ export default function PostsPage() {
       <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Posts
+            Bài viết
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            News Management
+            Bài viết
           </h1>
         </div>
-        <Link
-          href="/dashboard/posts/new"
-          className="rounded-md bg-zinc-950 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-zinc-800"
-        >
-          New Post
-        </Link>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link
+            href="/dashboard/post-categories"
+            className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+          >
+            Quản lý danh mục
+          </Link>
+          <Link
+            href="/dashboard/posts/new"
+            className="rounded-md bg-zinc-950 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-zinc-800"
+          >
+            Thêm bài viết
+          </Link>
+        </div>
       </header>
 
       <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_190px_150px_150px_160px_190px]">
@@ -129,7 +152,7 @@ export default function PostsPage() {
             setPage(1);
             setSearch(event.target.value);
           }}
-          placeholder="Search by title, slug, or excerpt"
+          placeholder="Tìm bài viết"
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         />
         <select
@@ -140,7 +163,7 @@ export default function PostsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="">All categories</option>
+          <option value="">Tất cả danh mục</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
@@ -155,10 +178,10 @@ export default function PostsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="">All status</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="hidden">Hidden</option>
+          <option value="">Tất cả trạng thái</option>
+          <option value="draft">{publishStatusLabels.draft}</option>
+          <option value="published">{publishStatusLabels.published}</option>
+          <option value="hidden">{publishStatusLabels.hidden}</option>
         </select>
         <select
           value={featured}
@@ -168,9 +191,9 @@ export default function PostsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="">All featured</option>
-          <option value="true">Featured</option>
-          <option value="false">Not featured</option>
+          <option value="">Tất cả nổi bật</option>
+          <option value="true">Nổi bật</option>
+          <option value="false">Không nổi bật</option>
         </select>
         <input
           value={tag}
@@ -178,7 +201,7 @@ export default function PostsPage() {
             setPage(1);
             setTag(event.target.value);
           }}
-          placeholder="Tag"
+          placeholder="Thẻ"
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         />
         <select
@@ -189,11 +212,11 @@ export default function PostsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="createdAt:desc">Newest</option>
-          <option value="createdAt:asc">Oldest</option>
-          <option value="publishedAt:desc">Published desc</option>
-          <option value="publishedAt:asc">Published asc</option>
-          <option value="sortOrder:asc">Sort order asc</option>
+          <option value="createdAt:desc">Mới nhất</option>
+          <option value="createdAt:asc">Cũ nhất</option>
+          <option value="publishedAt:desc">Ngày đăng mới nhất</option>
+          <option value="publishedAt:asc">Ngày đăng cũ nhất</option>
+          <option value="sortOrder:asc">Thứ tự hiển thị</option>
         </select>
       </div>
 
@@ -204,28 +227,28 @@ export default function PostsPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading posts...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       <div className="mt-8 overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
         <table className="w-full min-w-[1100px] text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase tracking-normal text-zinc-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">Cover</th>
-              <th className="px-4 py-3 font-semibold">Title</th>
-              <th className="px-4 py-3 font-semibold">Category</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Published At</th>
-              <th className="px-4 py-3 font-semibold">Featured</th>
-              <th className="px-4 py-3 font-semibold">Updated</th>
-              <th className="px-4 py-3 font-semibold">Actions</th>
+              <th className="px-4 py-3 font-semibold">Ảnh bìa</th>
+              <th className="px-4 py-3 font-semibold">Tiêu đề</th>
+              <th className="px-4 py-3 font-semibold">Danh mục</th>
+              <th className="px-4 py-3 font-semibold">Trạng thái</th>
+              <th className="px-4 py-3 font-semibold">Ngày đăng</th>
+              <th className="px-4 py-3 font-semibold">Nổi bật</th>
+              <th className="px-4 py-3 font-semibold">Cập nhật lần cuối</th>
+              <th className="px-4 py-3 font-semibold">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200">
             {!isLoading && posts.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
-                  No posts found.
+                  Không tìm thấy kết quả.
                 </td>
               </tr>
             ) : null}
@@ -245,7 +268,7 @@ export default function PostsPage() {
                     </div>
                   ) : (
                     <div className="flex h-16 w-20 items-center justify-center rounded-md bg-zinc-100 text-xs text-zinc-500">
-                      Empty
+                      {emptyLabel}
                     </div>
                   )}
                 </td>
@@ -254,17 +277,21 @@ export default function PostsPage() {
                   <p className="mt-1 text-xs text-zinc-500">{post.slug}</p>
                 </td>
                 <td className="px-4 py-3 text-zinc-600">
-                  {post.category?.name ?? "Unassigned"}
-                </td>
-                <td className="px-4 py-3 text-zinc-600">{post.status}</td>
-                <td className="px-4 py-3 text-zinc-600">
-                  {post.publishedAt ? formatDate(post.publishedAt) : "Empty"}
+                  {post.category?.name ?? unassignedLabel}
                 </td>
                 <td className="px-4 py-3 text-zinc-600">
-                  {post.isFeatured ? "Yes" : "No"}
+                  {publishStatusLabels[post.status]}
                 </td>
                 <td className="px-4 py-3 text-zinc-600">
-                  {formatDate(post.updatedAt)}
+                  {post.publishedAt
+                    ? formatAdminDateTime(post.publishedAt)
+                    : emptyLabel}
+                </td>
+                <td className="px-4 py-3 text-zinc-600">
+                  {yesNoLabel(post.isFeatured)}
+                </td>
+                <td className="px-4 py-3 text-zinc-600">
+                  {formatAdminDateTime(post.updatedAt)}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">
@@ -272,14 +299,14 @@ export default function PostsPage() {
                       href={`/dashboard/posts/${post.id}/edit`}
                       className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-semibold transition hover:bg-zinc-50"
                     >
-                      Edit
+                      Chỉnh sửa
                     </Link>
                     <button
                       type="button"
-                      onClick={() => void handleDelete(post)}
+                      onClick={() => setDeleteTarget(post)}
                       className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                     >
-                      Delete
+                      Xóa
                     </button>
                   </div>
                 </td>
@@ -296,7 +323,7 @@ export default function PostsPage() {
           onClick={() => setPage((value) => Math.max(1, value - 1))}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
         >
-          Previous
+          Trước
         </button>
         <span className="min-w-20 text-center text-sm text-zinc-600">
           {page} / {Math.max(totalPages, 1)}
@@ -307,20 +334,26 @@ export default function PostsPage() {
           onClick={() => setPage((value) => value + 1)}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
         >
-          Next
+          Sau
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Xóa bài viết?"
+        description={
+          <>
+            Bạn có chắc muốn xóa{" "}
+            <span className="font-semibold text-zinc-900">
+              {deleteTarget?.title}
+            </span>
+            ? Thao tác này không thể hoàn tác.
+          </>
+        }
+        isLoading={isDeleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void handleDeleteConfirm()}
+      />
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }

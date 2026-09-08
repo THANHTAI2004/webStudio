@@ -26,7 +26,7 @@ export function EntitySelector({
       items.find((item) => item.id === id) ?? {
         id,
         label: id,
-        detail: "Saved item is not in the loaded list.",
+        detail: "Mục đã lưu không có trong danh sách hiện tại.",
       },
   );
   const availableItems = items.filter((item) => !selectedIds.includes(item.id));
@@ -63,7 +63,7 @@ export function EntitySelector({
           disabled={selectedIds.length >= maxSelection}
           className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-zinc-100"
         >
-          <option value="">Add item</option>
+          <option value="">Thêm mục</option>
           {availableItems.map((item) => (
             <option key={item.id} value={item.id}>
               {item.label}
@@ -74,7 +74,7 @@ export function EntitySelector({
 
       {selectedItems.length === 0 ? (
         <p className="mt-3 rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-          No manual items selected.
+          Chưa chọn mục nào.
         </p>
       ) : (
         <div className="mt-3 space-y-3">
@@ -97,7 +97,7 @@ export function EntitySelector({
                 disabled={index === 0}
                 className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
               >
-                Up
+                Di chuyển lên
               </button>
               <button
                 type="button"
@@ -105,7 +105,7 @@ export function EntitySelector({
                 disabled={index === selectedItems.length - 1}
                 className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
               >
-                Down
+                Di chuyển xuống
               </button>
               <button
                 type="button"
@@ -114,7 +114,7 @@ export function EntitySelector({
                 }
                 className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
               >
-                Remove
+                Gỡ bỏ
               </button>
             </div>
           ))}

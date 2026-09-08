@@ -2,9 +2,9 @@ import type { ContactStatus } from "@/lib/api/contacts";
 
 export const contactStatusLabels: Record<ContactStatus, string> = {
   new: "M\u1edbi",
-  read: "\u0110\u00e3 \u0111\u1ecdc",
+  read: "Đã xem",
   replied: "\u0110\u00e3 ph\u1ea3n h\u1ed3i",
-  archived: "L\u01b0u tr\u1eef",
+  archived: "Đã lưu trữ",
 };
 
 export function getContactStatusClass(status: ContactStatus): string {

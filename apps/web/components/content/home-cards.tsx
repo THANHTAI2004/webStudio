@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { currencyFormatter, dateFormatter } from "@/components/ui/public-ui";
 import { getMediaAssetUrl } from "@/lib/api/client";
 import type {
   HomeAlbumCard,
@@ -8,27 +9,16 @@ import type {
   HomePostCard,
 } from "@/lib/api/home";
 
-const currencyFormatter = new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-});
-
-const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-});
-
 export function HomePackageCardView({
   packageItem,
 }: {
   packageItem: HomePackageCard;
 }) {
   return (
-    <article className="theme-card overflow-hidden">
+    <article className="public-card">
       <Link
         href={`/goi-chup/${packageItem.slug}`}
-        className="relative block aspect-[4/3] bg-zinc-100"
+        className="image-link aspect-[4/3]"
       >
         {packageItem.thumbnail ? (
           <Image
@@ -39,48 +29,46 @@ export function HomePackageCardView({
             className="object-cover"
           />
         ) : (
-          <span className="flex h-full items-center justify-center text-sm text-zinc-500">
-            Studio Package
-          </span>
+          <span className="media-fallback">Gói chụp</span>
         )}
       </Link>
-      <div className="p-5">
-        <p className="text-sm font-bold" style={{ color: "var(--color-primary)" }}>
-          {packageItem.category?.name ?? "Studio"}
+      <div className="p-5 md:p-6">
+        <p className="section-eyebrow">
+          {packageItem.category?.name ?? "Dịch vụ"}
         </p>
         <h3
-          className="mt-2 text-xl font-semibold"
+          className="mt-3 text-2xl font-semibold leading-tight"
           style={{ fontFamily: "var(--font-heading)" }}
         >
           <Link href={`/goi-chup/${packageItem.slug}`}>{packageItem.name}</Link>
         </h3>
         {packageItem.description ? (
-          <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600">
+          <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--color-muted)]">
             {packageItem.description}
           </p>
         ) : null}
-        <div className="mt-5 flex flex-wrap items-end gap-3">
-          <p className="text-lg font-semibold">
+        <div className="mt-6 flex flex-wrap items-end gap-3">
+          <p className="text-xl font-semibold">
             {currencyFormatter.format(packageItem.salePrice ?? packageItem.price)}
           </p>
           {packageItem.salePrice !== null ? (
-            <p className="text-sm text-zinc-500 line-through">
+            <p className="text-sm text-[var(--color-muted)] line-through">
               {currencyFormatter.format(packageItem.price)}
             </p>
           ) : null}
         </div>
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-6 flex flex-wrap gap-2">
           <Link
             href={`/goi-chup/${packageItem.slug}`}
             className="theme-button-secondary"
           >
-            Xem chi ti\u1ebft
+            Xem chi tiết
           </Link>
           <Link
             href={`/dat-lich?package=${packageItem.slug}`}
             className="theme-button-primary"
           >
-            \u0110\u1eb7t l\u1ecbch
+            Đặt lịch
           </Link>
         </div>
       </div>
@@ -90,11 +78,8 @@ export function HomePackageCardView({
 
 export function HomeAlbumCardView({ album }: { album: HomeAlbumCard }) {
   return (
-    <article className="theme-card overflow-hidden">
-      <Link
-        href={`/album/${album.slug}`}
-        className="relative block aspect-[4/3] bg-zinc-100"
-      >
+    <article className="public-card">
+      <Link href={`/album/${album.slug}`} className="image-link aspect-[4/3]">
         {album.cover ? (
           <Image
             src={getMediaAssetUrl(album.cover.url)}
@@ -104,23 +89,31 @@ export function HomeAlbumCardView({ album }: { album: HomeAlbumCard }) {
             className="object-cover"
           />
         ) : (
-          <span className="flex h-full items-center justify-center text-sm text-zinc-500">
-            Album
-          </span>
+          <span className="media-fallback">Album</span>
         )}
       </Link>
-      <div className="p-5">
-        <p className="text-sm font-bold" style={{ color: "var(--color-primary)" }}>
-          {album.category?.name ?? album.location}
-        </p>
+      <div className="p-5 md:p-6">
+        <div className="flex flex-wrap gap-2">
+          {album.category ? <p className="section-eyebrow">{album.category.name}</p> : null}
+          {album.shootingDate ? (
+            <p className="text-xs font-bold text-[var(--color-muted)]">
+              {dateFormatter.format(new Date(album.shootingDate))}
+            </p>
+          ) : null}
+        </div>
         <h3
-          className="mt-2 text-xl font-semibold"
+          className="mt-3 text-2xl font-semibold leading-tight"
           style={{ fontFamily: "var(--font-heading)" }}
         >
           <Link href={`/album/${album.slug}`}>{album.title}</Link>
         </h3>
+        {album.location ? (
+          <p className="mt-2 text-sm font-semibold text-[var(--color-muted)]">
+            {album.location}
+          </p>
+        ) : null}
         {album.description ? (
-          <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600">
+          <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--color-muted)]">
             {album.description}
           </p>
         ) : null}
@@ -131,11 +124,8 @@ export function HomeAlbumCardView({ album }: { album: HomeAlbumCard }) {
 
 export function HomePostCardView({ post }: { post: HomePostCard }) {
   return (
-    <article className="theme-card overflow-hidden">
-      <Link
-        href={`/tin-tuc/${post.slug}`}
-        className="relative block aspect-[16/10] bg-zinc-100"
-      >
+    <article className="public-card">
+      <Link href={`/tin-tuc/${post.slug}`} className="image-link aspect-[16/10]">
         {post.cover ? (
           <Image
             src={getMediaAssetUrl(post.cover.url)}
@@ -145,31 +135,35 @@ export function HomePostCardView({ post }: { post: HomePostCard }) {
             className="object-cover"
           />
         ) : (
-          <span className="flex h-full items-center justify-center text-sm text-zinc-500">
-            News
-          </span>
+          <span className="media-fallback">Bài viết</span>
         )}
       </Link>
-      <div className="p-5">
-        <p className="text-sm font-bold" style={{ color: "var(--color-primary)" }}>
-          {post.category?.name ?? "Tin t\u1ee9c"}
-        </p>
+      <div className="p-5 md:p-6">
+        <div className="flex flex-wrap gap-2">
+          <p className="section-eyebrow">{post.category?.name ?? "Bài viết"}</p>
+          {post.publishedAt ? (
+            <p className="text-xs font-bold text-[var(--color-muted)]">
+              {dateFormatter.format(new Date(post.publishedAt))}
+            </p>
+          ) : null}
+        </div>
         <h3
-          className="mt-2 text-xl font-semibold"
+          className="mt-3 text-2xl font-semibold leading-tight"
           style={{ fontFamily: "var(--font-heading)" }}
         >
           <Link href={`/tin-tuc/${post.slug}`}>{post.title}</Link>
         </h3>
-        {post.publishedAt ? (
-          <p className="mt-2 text-xs font-semibold text-zinc-500">
-            {dateFormatter.format(new Date(post.publishedAt))}
-          </p>
-        ) : null}
         {post.excerpt ? (
-          <p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600">
+          <p className="mt-3 line-clamp-3 text-sm leading-7 text-[var(--color-muted)]">
             {post.excerpt}
           </p>
         ) : null}
+        <Link
+          href={`/tin-tuc/${post.slug}`}
+          className="mt-6 inline-flex text-sm font-extrabold text-[var(--color-primary)] underline decoration-[var(--color-accent)] underline-offset-4"
+        >
+          Đọc bài viết
+        </Link>
       </div>
     </article>
   );
@@ -181,10 +175,10 @@ export function HomeLocationCardView({
   location: HomeLocationCard;
 }) {
   return (
-    <article className="theme-card overflow-hidden">
+    <article className="public-card">
       <Link
         href={`/dia-diem/${location.slug}`}
-        className="relative block aspect-[4/3] bg-zinc-100"
+        className="image-link aspect-[4/3]"
       >
         {location.cover ? (
           <Image
@@ -195,35 +189,42 @@ export function HomeLocationCardView({
             className="object-cover"
           />
         ) : (
-          <span className="flex h-full items-center justify-center text-sm text-zinc-500">
-            Location
-          </span>
+          <span className="media-fallback">Cơ sở</span>
         )}
       </Link>
-      <div className="p-5">
+      <div className="p-5 md:p-6">
+        <p className="section-eyebrow">Cơ sở</p>
         <h3
-          className="text-xl font-semibold"
+          className="mt-3 text-2xl font-semibold leading-tight"
           style={{ fontFamily: "var(--font-heading)" }}
         >
           <Link href={`/dia-diem/${location.slug}`}>{location.name}</Link>
         </h3>
         {location.address ? (
-          <p className="mt-3 line-clamp-2 text-sm leading-6 text-zinc-600">
+          <p className="mt-3 line-clamp-2 text-sm leading-7 text-[var(--color-muted)]">
             {location.address}
           </p>
         ) : null}
-        <div className="mt-5 flex flex-wrap gap-2">
+        {location.phone ? (
+          <a
+            href={`tel:${location.phone}`}
+            className="mt-4 inline-flex text-sm font-extrabold text-[var(--color-primary)]"
+          >
+            {location.phone}
+          </a>
+        ) : null}
+        <div className="mt-6 flex flex-wrap gap-2">
           <Link
             href={`/dia-diem/${location.slug}`}
             className="theme-button-secondary"
           >
-            Xem chi ti\u1ebft
+            Xem cơ sở
           </Link>
           <Link
             href={`/dat-lich?location=${location.slug}`}
             className="theme-button-primary"
           >
-            \u0110\u1eb7t l\u1ecbch
+            Đặt lịch
           </Link>
         </div>
       </div>

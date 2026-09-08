@@ -175,11 +175,11 @@ export const fallbackHome: PublicHome = {
     subtitle: "",
     background: null,
     primaryCta: {
-      label: "Dat lich",
+      label: "Đặt lịch ngay",
       href: "/dat-lich",
     },
     secondaryCta: {
-      label: "Xem goi chup",
+      label: "Xem gói chụp",
       href: "/goi-chup",
     },
   },
@@ -188,7 +188,7 @@ export const fallbackHome: PublicHome = {
     heading: "",
     description: "",
     media: null,
-    buttonLabel: "Gioi thieu",
+    buttonLabel: "Tìm hiểu Studio",
   },
   featuredPackages: {
     enabled: false,
@@ -234,7 +234,7 @@ export const fallbackHome: PublicHome = {
     enabled: false,
     heading: "",
     description: "",
-    buttonLabel: "Dat lich",
+    buttonLabel: "Đặt lịch chụp",
     background: null,
   },
   sectionOrder: homeSectionKeys,

@@ -18,6 +18,10 @@ import {
   getBookings,
 } from "@/lib/api/bookings";
 import { type AdminPackage, getPackages } from "@/lib/api/packages";
+import {
+  getAdminErrorMessage,
+  loadErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 import {
   bookingStatusLabels,
@@ -120,7 +124,7 @@ export default function BookingsPage() {
         }
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load bookings."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +189,7 @@ export default function BookingsPage() {
       <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Booking
+            Lịch chụp
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
             {"\u0110\u1eb7t l\u1ecbch"}
@@ -236,7 +240,7 @@ export default function BookingsPage() {
                 setPage(1);
                 setSearch(event.target.value);
               }}
-              placeholder="Search code, customer, phone, email"
+              placeholder="Tìm mã, khách hàng, số điện thoại, email"
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
             <select
@@ -247,7 +251,7 @@ export default function BookingsPage() {
               }}
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             >
-              <option value="">All status</option>
+              <option value="">Tất cả trạng thái</option>
               {bookingStatuses.map((item) => (
                 <option key={item} value={item}>
                   {bookingStatusLabels[item]}
@@ -262,7 +266,7 @@ export default function BookingsPage() {
               }}
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             >
-              <option value="">All packages</option>
+              <option value="">Tất cả gói chụp</option>
               {packages.map((item) => (
                 <option key={item.id} value={item.id}>
                   {item.name}
@@ -295,17 +299,17 @@ export default function BookingsPage() {
               }}
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             >
-              <option value="createdAt:desc">Newest</option>
-              <option value="createdAt:asc">Oldest</option>
-              <option value="shootDate:asc">Shoot date asc</option>
-              <option value="shootDate:desc">Shoot date desc</option>
-              <option value="updatedAt:desc">Updated</option>
+              <option value="createdAt:desc">Mới nhất</option>
+              <option value="createdAt:asc">Cũ nhất</option>
+              <option value="shootDate:asc">Ngày chụp gần nhất</option>
+              <option value="shootDate:desc">Ngày chụp xa nhất</option>
+              <option value="updatedAt:desc">Mới cập nhật</option>
             </select>
             <button
               type="button"
               onClick={resetFilters}
-              title="Reset filters"
-              aria-label="Reset filters"
+              title="Đặt lại bộ lọc"
+              aria-label="Đặt lại bộ lọc"
               className="flex size-10 items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-700 transition hover:bg-zinc-50"
             >
               <RotateCcw size={16} />
@@ -313,7 +317,7 @@ export default function BookingsPage() {
           </div>
 
           {isLoading ? (
-            <p className="mt-8 text-sm text-zinc-600">Loading bookings...</p>
+            <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
           ) : null}
 
           <BookingTable bookings={bookings} isLoading={isLoading} />
@@ -325,7 +329,7 @@ export default function BookingsPage() {
               onClick={() => setPage((value) => Math.max(1, value - 1))}
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
             >
-              Previous
+              Trước
             </button>
             <span className="min-w-20 text-center text-sm text-zinc-600">
               {page} / {Math.max(totalPages, 1)}
@@ -336,7 +340,7 @@ export default function BookingsPage() {
               onClick={() => setPage((value) => value + 1)}
               className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
             >
-              Next
+              Sau
             </button>
           </div>
         </>
@@ -350,8 +354,8 @@ export default function BookingsPage() {
               <button
                 type="button"
                 onClick={() => changeMonth(-1)}
-                title="Previous month"
-                aria-label="Previous month"
+                title="Tháng trước"
+                aria-label="Tháng trước"
                 className="flex size-10 items-center justify-center rounded-md border border-zinc-300 bg-white transition hover:bg-zinc-50"
               >
                 <ChevronLeft size={18} />
@@ -361,13 +365,13 @@ export default function BookingsPage() {
                 onClick={() => setMonthDate(firstDayOfMonth(new Date()))}
                 className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold transition hover:bg-zinc-50"
               >
-                Today
+                Hôm nay
               </button>
               <button
                 type="button"
                 onClick={() => changeMonth(1)}
-                title="Next month"
-                aria-label="Next month"
+                title="Tháng sau"
+                aria-label="Tháng sau"
                 className="flex size-10 items-center justify-center rounded-md border border-zinc-300 bg-white transition hover:bg-zinc-50"
               >
                 <ChevronRight size={18} />
@@ -376,7 +380,7 @@ export default function BookingsPage() {
           </div>
 
           {isLoading ? (
-            <p className="mt-8 text-sm text-zinc-600">Loading calendar...</p>
+            <p className="mt-8 text-sm text-zinc-600">Đang tải lịch...</p>
           ) : null}
 
           <div className="mt-5 grid grid-cols-7 rounded-lg border border-zinc-200 bg-white shadow-sm">
@@ -414,23 +418,23 @@ function BookingTable({
       <table className="w-full min-w-[1120px] text-left text-sm">
         <thead className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase tracking-normal text-zinc-500">
           <tr>
-            <th className="px-4 py-3 font-semibold">Code</th>
-            <th className="px-4 py-3 font-semibold">Customer</th>
-            <th className="px-4 py-3 font-semibold">Phone</th>
-            <th className="px-4 py-3 font-semibold">Package</th>
-            <th className="px-4 py-3 font-semibold">Shoot date</th>
-            <th className="px-4 py-3 font-semibold">Time</th>
-            <th className="px-4 py-3 font-semibold">Location</th>
-            <th className="px-4 py-3 font-semibold">Status</th>
-            <th className="px-4 py-3 font-semibold">Created</th>
-            <th className="px-4 py-3 font-semibold">Action</th>
+            <th className="px-4 py-3 font-semibold">Mã đặt lịch</th>
+            <th className="px-4 py-3 font-semibold">Khách hàng</th>
+            <th className="px-4 py-3 font-semibold">Số điện thoại</th>
+            <th className="px-4 py-3 font-semibold">Gói chụp</th>
+            <th className="px-4 py-3 font-semibold">Ngày chụp</th>
+            <th className="px-4 py-3 font-semibold">Giờ chụp</th>
+            <th className="px-4 py-3 font-semibold">Địa điểm</th>
+            <th className="px-4 py-3 font-semibold">Trạng thái</th>
+            <th className="px-4 py-3 font-semibold">Ngày tạo</th>
+            <th className="px-4 py-3 font-semibold">Thao tác</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-200">
           {!isLoading && bookings.length === 0 ? (
             <tr>
               <td colSpan={10} className="px-4 py-8 text-center text-zinc-500">
-                No bookings found.
+                Không tìm thấy kết quả.
               </td>
             </tr>
           ) : null}
@@ -466,7 +470,7 @@ function BookingTable({
                   href={`/dashboard/bookings/${booking.id}`}
                   className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-semibold transition hover:bg-zinc-50"
                 >
-                  View / Manage
+                  Xem / Xử lý
                 </Link>
               </td>
             </tr>
@@ -506,7 +510,9 @@ function CalendarCell({
           </Link>
         ))}
         {bookings.length > 4 ? (
-          <p className="text-xs text-zinc-500">+{bookings.length - 4} more</p>
+          <p className="text-xs text-zinc-500">
+            +{bookings.length - 4} lịch khác
+          </p>
         ) : null}
       </div>
     </div>
@@ -594,8 +600,4 @@ function formatDateTime(value: string): string {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

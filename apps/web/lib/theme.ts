@@ -50,7 +50,7 @@ export function getHeadingFontStack(
       return "Georgia, serif";
     case "sans":
     default:
-      return "Arial, Helvetica, sans-serif";
+      return "Arial, Helvetica, system-ui, sans-serif";
   }
 }
 
@@ -62,6 +62,6 @@ export function getBodyFontStack(
       return 'Georgia, "Times New Roman", serif';
     case "sans":
     default:
-      return "Arial, Helvetica, sans-serif";
+      return "Arial, Helvetica, system-ui, sans-serif";
   }
 }

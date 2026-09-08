@@ -17,6 +17,11 @@ import {
   getTheme,
   updateTheme,
 } from "@/lib/api/theme";
+import {
+  getAdminErrorMessage,
+  loadErrorMessage,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 import { getPublicUrl } from "@/lib/site-url";
 
@@ -24,14 +29,14 @@ const colorFields: Array<{
   key: keyof AdminTheme["colors"];
   label: string;
 }> = [
-  { key: "primary", label: "Primary" },
-  { key: "secondary", label: "Secondary" },
-  { key: "background", label: "Background" },
-  { key: "surface", label: "Surface" },
-  { key: "text", label: "Text" },
-  { key: "mutedText", label: "Muted Text" },
-  { key: "border", label: "Border" },
-  { key: "accent", label: "Accent" },
+  { key: "primary", label: "Màu chính" },
+  { key: "secondary", label: "Màu phụ" },
+  { key: "background", label: "Màu nền" },
+  { key: "surface", label: "Màu khối nội dung" },
+  { key: "text", label: "Màu chữ" },
+  { key: "mutedText", label: "Màu chữ phụ" },
+  { key: "border", label: "Màu đường viền" },
+  { key: "accent", label: "Màu nhấn" },
 ];
 
 const headingFonts: ThemeHeadingFont[] = ["serif", "sans", "elegant"];
@@ -62,7 +67,7 @@ export default function ThemePage() {
         setTheme(response.data);
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load theme."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +91,7 @@ export default function ThemePage() {
     }
 
     if (Object.values(theme.colors).some((value) => !hexPattern.test(value))) {
-      setError("Colors must use #RRGGBB hex format.");
+      setError("Màu cần đúng định dạng #RRGGBB.");
       return;
     }
 
@@ -109,10 +114,10 @@ export default function ThemePage() {
 
       if (response) {
         setTheme(response.data);
-        setNotice("Theme saved.");
+        setNotice("Đã lưu giao diện.");
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save theme."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSaving(false);
     }
@@ -138,7 +143,7 @@ export default function ThemePage() {
   if (isLoading || !theme) {
     return (
       <main className="mx-auto w-full max-w-5xl">
-        <p className="text-sm text-zinc-600">Loading theme...</p>
+        <p className="text-sm text-zinc-600">Đang tải giao diện...</p>
       </main>
     );
   }
@@ -148,10 +153,10 @@ export default function ThemePage() {
       <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            CMS
+            Hệ thống
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            Theme
+            Giao diện
           </h1>
         </div>
         <Link
@@ -160,7 +165,7 @@ export default function ThemePage() {
           rel="noopener noreferrer"
           className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold hover:bg-zinc-50"
         >
-          View site
+          Xem website
         </Link>
       </header>
 
@@ -176,7 +181,7 @@ export default function ThemePage() {
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
-        <FormSection title="Colors">
+        <FormSection title="Màu sắc">
           <div className="grid gap-4 md:grid-cols-2">
             {colorFields.map((field) => (
               <ColorField
@@ -189,10 +194,10 @@ export default function ThemePage() {
           </div>
         </FormSection>
 
-        <FormSection title="Buttons">
+        <FormSection title="Nút bấm">
           <div className="grid gap-5 md:grid-cols-2">
             <NumberField
-              label="Radius"
+              label="Độ bo góc nút"
               value={theme.buttons.radius}
               min={0}
               max={40}
@@ -207,9 +212,10 @@ export default function ThemePage() {
               }
             />
             <SelectField
-              label="Style"
+              label="Kiểu nút"
               value={theme.buttons.style}
               options={buttonStyles}
+              getOptionLabel={getButtonStyleLabel}
               onChange={(style) =>
                 setTheme({
                   ...theme,
@@ -223,9 +229,9 @@ export default function ThemePage() {
           </div>
         </FormSection>
 
-        <FormSection title="Cards">
+        <FormSection title="Khung nội dung">
           <NumberField
-            label="Radius"
+            label="Độ bo góc khung"
             value={theme.cards.radius}
             min={0}
             max={40}
@@ -241,9 +247,9 @@ export default function ThemePage() {
           />
         </FormSection>
 
-        <FormSection title="Layout">
+        <FormSection title="Bố cục">
           <NumberField
-            label="Max width"
+            label="Độ rộng tối đa"
             value={theme.layout.maxWidth}
             min={960}
             max={1600}
@@ -258,12 +264,13 @@ export default function ThemePage() {
           />
         </FormSection>
 
-        <FormSection title="Typography">
+        <FormSection title="Kiểu chữ">
           <div className="grid gap-5 md:grid-cols-2">
             <SelectField
-              label="Heading font"
+              label="Kiểu chữ tiêu đề"
               value={theme.typography.headingFont}
               options={headingFonts}
+              getOptionLabel={getHeadingFontLabel}
               onChange={(headingFont) =>
                 setTheme({
                   ...theme,
@@ -275,9 +282,10 @@ export default function ThemePage() {
               }
             />
             <SelectField
-              label="Body font"
+              label="Kiểu chữ nội dung"
               value={theme.typography.bodyFont}
               options={bodyFonts}
+              getOptionLabel={getBodyFontLabel}
               onChange={(bodyFont) =>
                 setTheme({
                   ...theme,
@@ -291,7 +299,7 @@ export default function ThemePage() {
           </div>
         </FormSection>
 
-        <FormSection title="Preview">
+        <FormSection title="Xem trước">
           <ThemePreview theme={theme} />
         </FormSection>
 
@@ -301,7 +309,7 @@ export default function ThemePage() {
             disabled={isSaving}
             className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
-            {isSaving ? "Saving..." : "Save Theme"}
+            {isSaving ? "Đang lưu..." : "Lưu giao diện"}
           </button>
         </div>
       </form>
@@ -352,17 +360,17 @@ function ThemePreview({ theme }: { theme: AdminTheme }) {
           className="text-sm font-semibold uppercase tracking-normal"
           style={{ color: theme.colors.accent }}
         >
-          Preview
+          Xem trước
         </p>
         <h2
           className="mt-3 text-3xl font-semibold tracking-normal"
           style={{ fontFamily: headingFont }}
         >
-          A calm studio visual system
+          Giao diện nhẹ nhàng cho Studio
         </h2>
         <p className="mt-3 text-sm leading-6" style={{ color: theme.colors.mutedText }}>
-          This preview uses the same safe CSS values the public site receives
-          from the Theme API.
+          Khung xem trước dùng cùng màu sắc, kiểu chữ và bo góc đang áp dụng
+          cho website.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <button
@@ -370,14 +378,14 @@ function ThemePreview({ theme }: { theme: AdminTheme }) {
             className="border px-4 py-2 text-sm font-semibold"
             style={primaryButtonStyle}
           >
-            Primary button
+            Nút chính
           </button>
           <button
             type="button"
             className="border bg-transparent px-4 py-2 text-sm font-semibold"
             style={secondaryButtonStyle}
           >
-            Secondary button
+            Nút phụ
           </button>
         </div>
         <div className="mt-6 border p-4" style={cardStyle}>
@@ -385,10 +393,10 @@ function ThemePreview({ theme }: { theme: AdminTheme }) {
             className="text-base font-semibold"
             style={{ fontFamily: headingFont }}
           >
-            Card title
+            Tiêu đề khung
           </h3>
           <p className="mt-2 text-sm leading-6" style={{ color: theme.colors.mutedText }}>
-            Surface, border, text, muted text, and radius are applied here.
+            Màu nền, đường viền, chữ phụ và bo góc được hiển thị tại đây.
           </p>
         </div>
       </div>
@@ -485,11 +493,13 @@ function SelectField({
   label,
   value,
   options,
+  getOptionLabel = (option) => option,
   onChange,
 }: {
   label: string;
   value: string;
   options: string[];
+  getOptionLabel?: (option: string) => string;
   onChange: (value: string) => void;
 }) {
   return (
@@ -502,7 +512,7 @@ function SelectField({
       >
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {getOptionLabel(option)}
           </option>
         ))}
       </select>
@@ -522,6 +532,22 @@ function getFontStack(font: ThemeHeadingFont | ThemeBodyFont): string {
   }
 }
 
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
+function getHeadingFontLabel(font: string): string {
+  switch (font) {
+    case "serif":
+      return "Có chân";
+    case "elegant":
+      return "Thanh lịch";
+    case "sans":
+    default:
+      return "Không chân";
+  }
+}
+
+function getBodyFontLabel(font: string): string {
+  return font === "serif" ? "Có chân" : "Không chân";
+}
+
+function getButtonStyleLabel(style: string): string {
+  return style === "outline" ? "Viền ngoài" : "Nền đặc";
 }

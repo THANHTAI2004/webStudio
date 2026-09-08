@@ -29,12 +29,12 @@ export const siteNavigation: SiteNavigationItem[] = [
   },
   {
     href: "/tin-tuc",
-    label: "Tin t\u1ee9c",
+    label: "Bài viết",
     settingKey: "showNews",
   },
   {
     href: "/dia-diem",
-    label: "\u0110\u1ecba \u0111i\u1ec3m",
+    label: "Cơ sở",
     settingKey: "showLocations",
   },
   {

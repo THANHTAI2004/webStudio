@@ -9,6 +9,7 @@ import {
   getAlbumCategories,
 } from "@/lib/api/album-categories";
 import { type AdminAlbum, getAlbumById } from "@/lib/api/albums";
+import { getAdminErrorMessage, loadErrorMessage } from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 export default function EditAlbumPage() {
@@ -42,7 +43,7 @@ export default function EditAlbumPage() {
           setAlbum(albumResponse.data);
           setCategories(categoryResponse.data);
         } catch (caughtError) {
-          setError(getErrorMessage(caughtError, "Unable to load album."));
+          setError(getAdminErrorMessage(caughtError, loadErrorMessage));
         } finally {
           setIsLoading(false);
         }
@@ -63,10 +64,10 @@ export default function EditAlbumPage() {
           href="/dashboard/albums"
           className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
         >
-          Albums
+          Album ảnh
         </Link>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          Edit Album
+          Chỉnh sửa album
         </h1>
       </header>
 
@@ -77,7 +78,7 @@ export default function EditAlbumPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading form...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       {!isLoading && album && categories.length > 0 ? (
@@ -87,8 +88,4 @@ export default function EditAlbumPage() {
       ) : null}
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

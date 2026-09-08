@@ -20,6 +20,14 @@ import {
   updateMedia,
   uploadMedia,
 } from "@/lib/api/media";
+import {
+  deleteErrorMessage,
+  formatAdminDateTime,
+  getAdminErrorMessage,
+  loadErrorMessage,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp";
 const MAX_UPLOAD_MB = 25;
@@ -38,6 +46,8 @@ export default function MediaLibraryPage() {
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<MediaItem | null>(null);
   const [altDraft, setAltDraft] = useState("");
 
   const withAuthRetry = useCallback(
@@ -83,7 +93,7 @@ export default function MediaLibraryPage() {
         setMedia(response.data);
         setTotalPages(response.pagination.totalPages);
       } catch (caughtError) {
-        setError(getErrorMessage(caughtError, "Unable to load media."));
+        setError(getAdminErrorMessage(caughtError, loadErrorMessage));
       } finally {
         setIsLoading(false);
       }
@@ -114,7 +124,12 @@ export default function MediaLibraryPage() {
       setPage(1);
       await loadMedia(1, search);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Upload failed."));
+      setError(
+        getAdminErrorMessage(
+          caughtError,
+          "Không thể tải ảnh lên. Vui lòng thử lại.",
+        ),
+      );
     } finally {
       setIsUploading(false);
     }
@@ -178,24 +193,26 @@ export default function MediaLibraryPage() {
       setEditingId(null);
       setAltDraft("");
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to update alt text."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     }
   }
 
-  async function handleDelete(mediaItem: MediaItem) {
-    const confirmed = window.confirm("Delete this image?");
-
-    if (!confirmed) {
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) {
       return;
     }
 
+    setIsDeleting(true);
     setError(null);
 
     try {
-      await withAuthRetry(() => deleteMedia(mediaItem.id));
+      await withAuthRetry(() => deleteMedia(deleteTarget.id));
+      setDeleteTarget(null);
       await loadMedia(page, search);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to delete media."));
+      setError(getMediaDeleteError(caughtError));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -204,10 +221,10 @@ export default function MediaLibraryPage() {
       <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Media
+            Ảnh
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            Media Library
+            Thư viện ảnh
           </h1>
         </div>
 
@@ -217,7 +234,7 @@ export default function MediaLibraryPage() {
           disabled={isUploading}
           className="rounded-md bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
-          {isUploading ? "Uploading..." : "Upload images"}
+          {isUploading ? "Đang tải lên..." : "Tải ảnh lên"}
         </button>
       </header>
 
@@ -242,11 +259,11 @@ export default function MediaLibraryPage() {
           onClick={() => inputRef.current?.click()}
           className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold transition hover:border-zinc-400 hover:bg-zinc-50"
         >
-          Choose files
+          Chọn ảnh
         </button>
         <p className="mt-4 text-sm text-zinc-600">
-          Drag and drop JPEG, PNG, or WebP images here. Maximum {MAX_UPLOAD_MB}
-          MB/file.
+          Kéo thả ảnh JPEG, PNG hoặc WebP vào đây. Tối đa {MAX_UPLOAD_MB}
+          MB/tệp.
         </p>
       </div>
 
@@ -258,7 +275,7 @@ export default function MediaLibraryPage() {
             setPage(1);
             setSearch(event.target.value);
           }}
-          placeholder="Search by name or alt"
+          placeholder="Tìm theo tên hoặc mô tả ảnh"
           className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 sm:max-w-sm"
         />
 
@@ -269,7 +286,7 @@ export default function MediaLibraryPage() {
             onClick={() => setPage((value) => Math.max(1, value - 1))}
             className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
           >
-            Previous
+            Trước
           </button>
           <span className="min-w-20 text-center text-sm text-zinc-600">
             {page} / {Math.max(totalPages, 1)}
@@ -280,7 +297,7 @@ export default function MediaLibraryPage() {
             onClick={() => setPage((value) => value + 1)}
             className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
           >
-            Next
+            Sau
           </button>
         </div>
       </div>
@@ -292,12 +309,12 @@ export default function MediaLibraryPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading media...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       {!isLoading && media.length === 0 ? (
         <p className="mt-8 rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-          No media found.
+          Không tìm thấy kết quả.
         </p>
       ) : null}
 
@@ -327,7 +344,7 @@ export default function MediaLibraryPage() {
                   {formatBytes(mediaItem.originalSize)}
                 </p>
                 <p className="mt-1 text-xs text-zinc-500">
-                  {formatDate(mediaItem.createdAt)}
+                  {formatAdminDateTime(mediaItem.createdAt)}
                 </p>
               </div>
 
@@ -337,6 +354,7 @@ export default function MediaLibraryPage() {
                     value={altDraft}
                     onChange={(event) => setAltDraft(event.target.value)}
                     maxLength={300}
+                    aria-label="Mô tả ảnh"
                     className="min-h-20 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
                   />
                   <div className="flex gap-2">
@@ -345,20 +363,20 @@ export default function MediaLibraryPage() {
                       onClick={() => void saveAlt(mediaItem)}
                       className="rounded-md bg-zinc-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
                     >
-                      Save
+                      Lưu
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
                       className="rounded-md border border-zinc-300 px-3 py-2 text-xs font-semibold transition hover:bg-zinc-50"
                     >
-                      Cancel
+                      Hủy
                     </button>
                   </div>
                 </div>
               ) : (
                 <p className="min-h-10 text-sm text-zinc-600">
-                  {mediaItem.alt || "No alt text"}
+                  {mediaItem.alt || "Chưa có mô tả ảnh"}
                 </p>
               )}
 
@@ -368,33 +386,48 @@ export default function MediaLibraryPage() {
                   onClick={() => void handleCopy(mediaItem)}
                   className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-semibold transition hover:bg-zinc-50"
                 >
-                  {copiedId === mediaItem.id ? "Copied" : "Copy URL"}
+                  {copiedId === mediaItem.id
+                    ? "Đã sao chép"
+                    : "Sao chép đường dẫn ảnh"}
                 </button>
                 <button
                   type="button"
                   onClick={() => startEditing(mediaItem)}
                   className="rounded-md border border-zinc-300 px-2 py-2 text-xs font-semibold transition hover:bg-zinc-50"
                 >
-                  Edit Alt
+                  Sửa mô tả
                 </button>
                 <button
                   type="button"
-                  onClick={() => void handleDelete(mediaItem)}
+                  onClick={() => setDeleteTarget(mediaItem)}
                   className="rounded-md border border-red-200 px-2 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                 >
-                  Delete
+                  Xóa
                 </button>
               </div>
             </div>
           </article>
         ))}
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Xóa ảnh?"
+        description={
+          <>
+            Bạn có chắc muốn xóa ảnh{" "}
+            <span className="font-semibold text-zinc-900">
+              {deleteTarget?.originalName}
+            </span>
+            ? Thao tác này không thể hoàn tác.
+          </>
+        }
+        isLoading={isDeleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void handleDeleteConfirm()}
+      />
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }
 
 function formatBytes(value: number): string {
@@ -409,9 +442,13 @@ function formatBytes(value: number): string {
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+function getMediaDeleteError(error: unknown): string {
+  if (
+    error instanceof ApiError &&
+    (error.status === 409 || error.message.includes("MEDIA_IN_USE"))
+  ) {
+    return "Ảnh này đang được sử dụng và chưa thể xóa.";
+  }
+
+  return getAdminErrorMessage(error, deleteErrorMessage);
 }

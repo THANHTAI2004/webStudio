@@ -26,19 +26,25 @@ import {
   updateHome,
 } from "@/lib/api/home";
 import { type AdminPackage, getPackages } from "@/lib/api/packages";
+import {
+  getAdminErrorMessage,
+  loadErrorMessage,
+  publishStatusLabels,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 import { getPublicUrl } from "@/lib/site-url";
 
 const homeSections: Array<{ key: HomeSectionKey; label: string }> = [
-  { key: "hero", label: "Hero" },
-  { key: "aboutPreview", label: "About preview" },
-  { key: "featuredPackages", label: "Featured packages" },
-  { key: "featuredAlbums", label: "Featured albums" },
-  { key: "usp", label: "USP" },
-  { key: "testimonials", label: "Testimonials" },
-  { key: "latestPosts", label: "Latest posts" },
-  { key: "locations", label: "Locations" },
-  { key: "bookingCta", label: "Booking CTA" },
+  { key: "hero", label: "Ảnh đầu trang" },
+  { key: "aboutPreview", label: "Giới thiệu ngắn" },
+  { key: "featuredPackages", label: "Gói chụp nổi bật" },
+  { key: "featuredAlbums", label: "Album nổi bật" },
+  { key: "usp", label: "Điểm nổi bật" },
+  { key: "testimonials", label: "Cảm nhận khách hàng" },
+  { key: "latestPosts", label: "Bài viết mới" },
+  { key: "locations", label: "Cơ sở" },
+  { key: "bookingCta", label: "Khu vực đặt lịch" },
 ];
 
 const featuredModes: HomeFeaturedMode[] = ["automatic", "manual"];
@@ -82,7 +88,11 @@ export default function HomeCmsPage() {
       packages.map<SelectableEntity>((item) => ({
         id: item.id,
         label: item.name,
-        detail: [item.category?.name, item.status, item.isFeatured ? "featured" : ""]
+        detail: [
+          item.category?.name,
+          publishStatusLabels[item.status],
+          item.isFeatured ? "Nổi bật" : "",
+        ]
           .filter(Boolean)
           .join(" / "),
       })),
@@ -93,7 +103,11 @@ export default function HomeCmsPage() {
       albums.map<SelectableEntity>((item) => ({
         id: item.id,
         label: item.title,
-        detail: [item.category?.name, item.status, item.isFeatured ? "featured" : ""]
+        detail: [
+          item.category?.name,
+          publishStatusLabels[item.status],
+          item.isFeatured ? "Nổi bật" : "",
+        ]
           .filter(Boolean)
           .join(" / "),
       })),
@@ -126,7 +140,7 @@ export default function HomeCmsPage() {
       setAlbums(albumsResponse.data);
       applyMediaState(homeResponse.data);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load homepage CMS."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -162,10 +176,10 @@ export default function HomeCmsPage() {
       if (response) {
         setHome(response.data);
         applyMediaState(response.data);
-        setNotice("Homepage saved.");
+        setNotice("Đã lưu trang chủ.");
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save homepage."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSaving(false);
     }
@@ -239,7 +253,7 @@ export default function HomeCmsPage() {
   if (isLoading || !home) {
     return (
       <main className="mx-auto w-full max-w-5xl">
-        <p className="text-sm text-zinc-600">Loading homepage CMS...</p>
+        <p className="text-sm text-zinc-600">Đang tải trang chủ...</p>
       </main>
     );
   }
@@ -249,10 +263,10 @@ export default function HomeCmsPage() {
       <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            CMS
+            Nội dung website
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            Homepage
+            Trang chủ
           </h1>
         </div>
         <Link
@@ -261,7 +275,7 @@ export default function HomeCmsPage() {
           rel="noopener noreferrer"
           className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold hover:bg-zinc-50"
         >
-          View page
+          Xem trang
         </Link>
       </header>
 
@@ -277,7 +291,7 @@ export default function HomeCmsPage() {
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
-        <FormSection title="Section order">
+        <FormSection title="Thứ tự các mục">
           <div className="space-y-3">
             {home.sectionOrder.map((sectionKey, index) => (
               <div
@@ -293,7 +307,7 @@ export default function HomeCmsPage() {
                   disabled={index === 0}
                   className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                 >
-                  Move Up
+                  Di chuyển lên
                 </button>
                 <button
                   type="button"
@@ -301,16 +315,16 @@ export default function HomeCmsPage() {
                   disabled={index === home.sectionOrder.length - 1}
                   className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                 >
-                  Move Down
+                  Di chuyển xuống
                 </button>
               </div>
             ))}
           </div>
         </FormSection>
 
-        <FormSection title="Hero">
+        <FormSection title="Ảnh đầu trang">
           <ToggleField
-            label="Enabled"
+            label="Hiển thị mục này"
             checked={home.hero.enabled}
             onChange={(enabled) =>
               patchHome((current) => ({
@@ -320,7 +334,7 @@ export default function HomeCmsPage() {
             }
           />
           <TextField
-            label="Eyebrow"
+            label="Dòng giới thiệu nhỏ"
             value={home.hero.eyebrow}
             onChange={(eyebrow) =>
               patchHome((current) => ({
@@ -331,7 +345,7 @@ export default function HomeCmsPage() {
             maxLength={120}
           />
           <TextField
-            label="Title"
+            label="Tiêu đề"
             value={home.hero.title}
             onChange={(title) =>
               patchHome((current) => ({
@@ -343,7 +357,7 @@ export default function HomeCmsPage() {
             required
           />
           <TextArea
-            label="Subtitle"
+            label="Mô tả"
             value={home.hero.subtitle}
             onChange={(subtitle) =>
               patchHome((current) => ({
@@ -355,13 +369,13 @@ export default function HomeCmsPage() {
             rows={4}
           />
           <SingleMediaField
-            label="Background"
-            pickerTitle="Choose hero background"
+            label="Ảnh nền"
+            pickerTitle="Chọn ảnh nền"
             value={heroBackground}
             onChange={setHeroBackground}
           />
           <CtaFields
-            title="Primary CTA"
+            title="Nút chính"
             value={home.hero.primaryCta}
             onChange={(primaryCta) =>
               patchHome((current) => ({
@@ -371,7 +385,7 @@ export default function HomeCmsPage() {
             }
           />
           <CtaFields
-            title="Secondary CTA"
+            title="Nút phụ"
             value={home.hero.secondaryCta}
             onChange={(secondaryCta) =>
               patchHome((current) => ({
@@ -382,9 +396,9 @@ export default function HomeCmsPage() {
           />
         </FormSection>
 
-        <FormSection title="About preview">
+        <FormSection title="Giới thiệu ngắn">
           <ToggleField
-            label="Enabled"
+            label="Hiển thị mục này"
             checked={home.aboutPreview.enabled}
             onChange={(enabled) =>
               patchHome((current) => ({
@@ -394,7 +408,7 @@ export default function HomeCmsPage() {
             }
           />
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={home.aboutPreview.heading}
             onChange={(heading) =>
               patchHome((current) => ({
@@ -405,7 +419,7 @@ export default function HomeCmsPage() {
             maxLength={180}
           />
           <TextArea
-            label="Description"
+            label="Mô tả"
             value={home.aboutPreview.description}
             onChange={(description) =>
               patchHome((current) => ({
@@ -417,13 +431,13 @@ export default function HomeCmsPage() {
             rows={4}
           />
           <SingleMediaField
-            label="Image"
-            pickerTitle="Choose about image"
+            label="Hình ảnh"
+            pickerTitle="Chọn ảnh giới thiệu"
             value={aboutMedia}
             onChange={setAboutMedia}
           />
           <TextField
-            label="Button label"
+            label="Chữ trên nút"
             value={home.aboutPreview.buttonLabel}
             onChange={(buttonLabel) =>
               patchHome((current) => ({
@@ -435,7 +449,7 @@ export default function HomeCmsPage() {
           />
         </FormSection>
 
-        <FormSection title="Featured packages">
+        <FormSection title="Gói chụp nổi bật">
           <FeaturedFields
             enabled={home.featuredPackages.enabled}
             heading={home.featuredPackages.heading}
@@ -478,7 +492,7 @@ export default function HomeCmsPage() {
           />
           {home.featuredPackages.mode === "manual" ? (
             <EntitySelector
-              title="Packages"
+              title="Gói chụp"
               items={packageOptions}
               selectedIds={home.featuredPackages.packageIds}
               onChange={(packageIds) =>
@@ -495,7 +509,7 @@ export default function HomeCmsPage() {
           ) : null}
         </FormSection>
 
-        <FormSection title="Featured albums">
+        <FormSection title="Album nổi bật">
           <FeaturedFields
             enabled={home.featuredAlbums.enabled}
             heading={home.featuredAlbums.heading}
@@ -538,7 +552,7 @@ export default function HomeCmsPage() {
           />
           {home.featuredAlbums.mode === "manual" ? (
             <EntitySelector
-              title="Albums"
+              title="Album ảnh"
               items={albumOptions}
               selectedIds={home.featuredAlbums.albumIds}
               onChange={(albumIds) =>
@@ -555,9 +569,9 @@ export default function HomeCmsPage() {
           ) : null}
         </FormSection>
 
-        <FormSection title="USP">
+        <FormSection title="Điểm nổi bật">
           <ToggleField
-            label="Enabled"
+            label="Hiển thị mục này"
             checked={home.usp.enabled}
             onChange={(enabled) =>
               patchHome((current) => ({
@@ -567,7 +581,7 @@ export default function HomeCmsPage() {
             }
           />
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={home.usp.heading}
             onChange={(heading) =>
               patchHome((current) => ({
@@ -578,7 +592,7 @@ export default function HomeCmsPage() {
             maxLength={180}
           />
           <EditableItems
-            addLabel="Add USP"
+            addLabel="Thêm điểm nổi bật"
             canAdd={home.usp.items.length < maxUspItems}
             onAdd={() =>
               patchHome((current) => ({
@@ -596,7 +610,7 @@ export default function HomeCmsPage() {
             {home.usp.items.map((item, index) => (
               <EditableItem key={`usp-${index}`} index={index}>
                 <TextField
-                  label="Title"
+                  label="Tiêu đề"
                   value={item.title}
                   onChange={(title) =>
                     patchHome((current) => ({
@@ -612,7 +626,7 @@ export default function HomeCmsPage() {
                   maxLength={120}
                 />
                 <TextArea
-                  label="Description"
+                  label="Mô tả"
                   value={item.description}
                   onChange={(description) =>
                     patchHome((current) => ({
@@ -659,9 +673,9 @@ export default function HomeCmsPage() {
           </EditableItems>
         </FormSection>
 
-        <FormSection title="Testimonials">
+        <FormSection title="Cảm nhận khách hàng">
           <ToggleField
-            label="Enabled"
+            label="Hiển thị mục này"
             checked={home.testimonials.enabled}
             onChange={(enabled) =>
               patchHome((current) => ({
@@ -671,7 +685,7 @@ export default function HomeCmsPage() {
             }
           />
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={home.testimonials.heading}
             onChange={(heading) =>
               patchHome((current) => ({
@@ -682,7 +696,7 @@ export default function HomeCmsPage() {
             maxLength={180}
           />
           <EditableItems
-            addLabel="Add testimonial"
+            addLabel="Thêm cảm nhận"
             canAdd={home.testimonials.items.length < maxTestimonials}
             onAdd={() =>
               patchHome((current) => ({
@@ -700,7 +714,7 @@ export default function HomeCmsPage() {
             {home.testimonials.items.map((item, index) => (
               <EditableItem key={`testimonial-${index}`} index={index}>
                 <TextField
-                  label="Customer name"
+                  label="Tên khách hàng"
                   value={item.customerName}
                   onChange={(customerName) =>
                     patchHome((current) => ({
@@ -719,7 +733,7 @@ export default function HomeCmsPage() {
                   maxLength={120}
                 />
                 <TextArea
-                  label="Content"
+                  label="Nội dung"
                   value={item.content}
                   onChange={(content) =>
                     patchHome((current) => ({
@@ -769,7 +783,7 @@ export default function HomeCmsPage() {
           </EditableItems>
         </FormSection>
 
-        <FormSection title="Latest posts">
+        <FormSection title="Bài viết mới">
           <SectionListFields
             enabled={home.latestPosts.enabled}
             heading={home.latestPosts.heading}
@@ -802,7 +816,7 @@ export default function HomeCmsPage() {
           />
         </FormSection>
 
-        <FormSection title="Locations">
+        <FormSection title="Cơ sở">
           <SectionListFields
             enabled={home.locations.enabled}
             heading={home.locations.heading}
@@ -835,9 +849,9 @@ export default function HomeCmsPage() {
           />
         </FormSection>
 
-        <FormSection title="Booking CTA">
+        <FormSection title="Khu vực đặt lịch">
           <ToggleField
-            label="Enabled"
+            label="Hiển thị mục này"
             checked={home.bookingCta.enabled}
             onChange={(enabled) =>
               patchHome((current) => ({
@@ -847,7 +861,7 @@ export default function HomeCmsPage() {
             }
           />
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={home.bookingCta.heading}
             onChange={(heading) =>
               patchHome((current) => ({
@@ -858,7 +872,7 @@ export default function HomeCmsPage() {
             maxLength={180}
           />
           <TextArea
-            label="Description"
+            label="Mô tả"
             value={home.bookingCta.description}
             onChange={(description) =>
               patchHome((current) => ({
@@ -870,7 +884,7 @@ export default function HomeCmsPage() {
             rows={3}
           />
           <TextField
-            label="Button label"
+            label="Chữ trên nút"
             value={home.bookingCta.buttonLabel}
             onChange={(buttonLabel) =>
               patchHome((current) => ({
@@ -881,8 +895,8 @@ export default function HomeCmsPage() {
             maxLength={80}
           />
           <SingleMediaField
-            label="Background"
-            pickerTitle="Choose booking CTA background"
+            label="Ảnh nền"
+            pickerTitle="Chọn ảnh nền đặt lịch"
             value={bookingBackground}
             onChange={setBookingBackground}
           />
@@ -890,7 +904,7 @@ export default function HomeCmsPage() {
 
         <FormSection title="SEO">
           <TextField
-            label="SEO Title"
+            label="Tiêu đề SEO"
             value={home.seo.title}
             onChange={(title) =>
               patchHome((current) => ({
@@ -901,7 +915,7 @@ export default function HomeCmsPage() {
             maxLength={70}
           />
           <TextArea
-            label="SEO Description"
+            label="Mô tả SEO"
             value={home.seo.description}
             onChange={(description) =>
               patchHome((current) => ({
@@ -913,8 +927,8 @@ export default function HomeCmsPage() {
             rows={3}
           />
           <SingleMediaField
-            label="OG Image"
-            pickerTitle="Choose homepage OG image"
+            label="Ảnh chia sẻ"
+            pickerTitle="Chọn ảnh chia sẻ trang chủ"
             value={seoImage}
             onChange={setSeoImage}
           />
@@ -926,7 +940,7 @@ export default function HomeCmsPage() {
             disabled={isSaving}
             className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
-            {isSaving ? "Saving..." : "Save Homepage"}
+            {isSaving ? "Đang lưu..." : "Lưu trang chủ"}
           </button>
         </div>
       </form>
@@ -959,15 +973,19 @@ function FeaturedFields({
 }) {
   return (
     <>
-      <ToggleField label="Enabled" checked={enabled} onChange={onEnabledChange} />
+      <ToggleField
+        label="Hiển thị mục này"
+        checked={enabled}
+        onChange={onEnabledChange}
+      />
       <TextField
-        label="Heading"
+        label="Tiêu đề"
         value={heading}
         onChange={onHeadingChange}
         maxLength={180}
       />
       <TextArea
-        label="Description"
+        label="Mô tả"
         value={description}
         onChange={onDescriptionChange}
         maxLength={500}
@@ -975,7 +993,7 @@ function FeaturedFields({
       />
       <div className="grid gap-5 md:grid-cols-2">
         <label className="block text-sm font-medium text-zinc-700">
-          Mode
+          Cách chọn
           <select
             value={mode}
             onChange={(event) =>
@@ -985,13 +1003,13 @@ function FeaturedFields({
           >
             {featuredModes.map((item) => (
               <option key={item} value={item}>
-                {item}
+                {getFeaturedModeLabel(item)}
               </option>
             ))}
           </select>
         </label>
         <NumberInput
-          label="Limit"
+          label="Số lượng hiển thị"
           value={limit}
           min={1}
           max={12}
@@ -1023,22 +1041,26 @@ function SectionListFields({
 }) {
   return (
     <>
-      <ToggleField label="Enabled" checked={enabled} onChange={onEnabledChange} />
+      <ToggleField
+        label="Hiển thị mục này"
+        checked={enabled}
+        onChange={onEnabledChange}
+      />
       <TextField
-        label="Heading"
+        label="Tiêu đề"
         value={heading}
         onChange={onHeadingChange}
         maxLength={180}
       />
       <TextArea
-        label="Description"
+        label="Mô tả"
         value={description}
         onChange={onDescriptionChange}
         maxLength={500}
         rows={3}
       />
       <NumberInput
-        label="Limit"
+        label="Số lượng hiển thị"
         value={limit}
         min={1}
         max={12}
@@ -1060,13 +1082,13 @@ function CtaFields({
   return (
     <div className="grid gap-5 md:grid-cols-2">
       <TextField
-        label={`${title} label`}
+        label={`${title} - chữ trên nút`}
         value={value.label}
         onChange={(label) => onChange({ ...value, label })}
         maxLength={80}
       />
       <TextField
-        label={`${title} href`}
+        label={`${title} - đường dẫn`}
         value={value.href}
         onChange={(href) => onChange({ ...value, href })}
         maxLength={500}
@@ -1113,7 +1135,7 @@ function EditableItem({
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-4">
       <p className="mb-4 text-sm font-semibold text-zinc-500">
-        Item {index + 1}
+        Mục {index + 1}
       </p>
       <div className="space-y-4">{children}</div>
     </div>
@@ -1139,7 +1161,7 @@ function ItemActions({
         disabled={index === 0}
         className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
       >
-        Move Up
+        Di chuyển lên
       </button>
       <button
         type="button"
@@ -1147,14 +1169,14 @@ function ItemActions({
         disabled={index === count - 1}
         className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
       >
-        Move Down
+        Di chuyển xuống
       </button>
       <button
         type="button"
         onClick={onRemove}
         className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
       >
-        Remove
+        Gỡ bỏ
       </button>
     </div>
   );
@@ -1297,6 +1319,6 @@ function getSectionLabel(key: HomeSectionKey): string {
   return homeSections.find((item) => item.key === key)?.label ?? key;
 }
 
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
+function getFeaturedModeLabel(mode: HomeFeaturedMode): string {
+  return mode === "automatic" ? "Tự động" : "Tự chọn";
 }

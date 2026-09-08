@@ -83,7 +83,7 @@ export function RichTextEditor({
 
     const currentHref = editor.getAttributes("link").href;
     const rawUrl = window.prompt(
-      "Link URL",
+      "Đường dẫn liên kết",
       typeof currentHref === "string" ? currentHref : "",
     );
     const safeUrl = normalizeSafeUrl(rawUrl);
@@ -93,7 +93,7 @@ export function RichTextEditor({
     }
 
     if (!safeUrl) {
-      window.alert("Only http, https, mailto, and tel links are allowed.");
+      window.alert("Chỉ cho phép liên kết http, https, email hoặc số điện thoại.");
       return;
     }
 
@@ -112,7 +112,7 @@ export function RichTextEditor({
   if (!editor) {
     return (
       <div className="rounded-md border border-zinc-300 bg-white px-4 py-6 text-sm text-zinc-500">
-        Loading editor...
+        Đang tải trình soạn thảo...
       </div>
     );
   }
@@ -121,7 +121,7 @@ export function RichTextEditor({
     <div>
       <div className="flex flex-wrap gap-2 rounded-t-md border border-zinc-300 bg-zinc-50 p-2">
         <ToolbarButton
-          label="Paragraph"
+          label="Đoạn văn"
           isActive={editor.isActive("paragraph")}
           onClick={() => editor.chain().focus().setParagraph().run()}
           disabled={disabled}
@@ -129,7 +129,7 @@ export function RichTextEditor({
           <Pilcrow size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Heading 2"
+          label="Tiêu đề 2"
           isActive={editor.isActive("heading", { level: 2 })}
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 2 }).run()
@@ -139,7 +139,7 @@ export function RichTextEditor({
           <Heading2 size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Heading 3"
+          label="Tiêu đề 3"
           isActive={editor.isActive("heading", { level: 3 })}
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 3 }).run()
@@ -149,7 +149,7 @@ export function RichTextEditor({
           <Heading3 size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Bold"
+          label="In đậm"
           isActive={editor.isActive("bold")}
           onClick={() => editor.chain().focus().toggleBold().run()}
           disabled={disabled}
@@ -157,7 +157,7 @@ export function RichTextEditor({
           <Bold size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Italic"
+          label="In nghiêng"
           isActive={editor.isActive("italic")}
           onClick={() => editor.chain().focus().toggleItalic().run()}
           disabled={disabled}
@@ -165,7 +165,7 @@ export function RichTextEditor({
           <Italic size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Strike"
+          label="Gạch ngang"
           isActive={editor.isActive("strike")}
           onClick={() => editor.chain().focus().toggleStrike().run()}
           disabled={disabled}
@@ -173,7 +173,7 @@ export function RichTextEditor({
           <Strikethrough size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Bullet List"
+          label="Danh sách"
           isActive={editor.isActive("bulletList")}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           disabled={disabled}
@@ -181,7 +181,7 @@ export function RichTextEditor({
           <List size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Ordered List"
+          label="Danh sách số"
           isActive={editor.isActive("orderedList")}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           disabled={disabled}
@@ -189,7 +189,7 @@ export function RichTextEditor({
           <ListOrdered size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Blockquote"
+          label="Trích dẫn"
           isActive={editor.isActive("blockquote")}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           disabled={disabled}
@@ -197,7 +197,7 @@ export function RichTextEditor({
           <Quote size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Code"
+          label="Mã"
           isActive={editor.isActive("code")}
           onClick={() => editor.chain().focus().toggleCode().run()}
           disabled={disabled}
@@ -205,21 +205,21 @@ export function RichTextEditor({
           <Code size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Undo"
+          label="Hoàn tác"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={disabled || !editor.can().undo()}
         >
           <Undo2 size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Redo"
+          label="Làm lại"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={disabled || !editor.can().redo()}
         >
           <Redo2 size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Link"
+          label="Thêm liên kết"
           isActive={editor.isActive("link")}
           onClick={setLink}
           disabled={disabled}
@@ -227,7 +227,7 @@ export function RichTextEditor({
           <LinkIcon size={16} />
         </ToolbarButton>
         <ToolbarButton
-          label="Remove Link"
+          label="Gỡ liên kết"
           onClick={() => editor.chain().focus().unsetLink().run()}
           disabled={disabled || !editor.isActive("link")}
         >

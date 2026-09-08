@@ -11,10 +11,10 @@ export default function NewLocationPage() {
           href="/dashboard/locations"
           className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
         >
-          Locations
+          Cơ sở
         </Link>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          New Location
+          Thêm cơ sở
         </h1>
       </header>
 

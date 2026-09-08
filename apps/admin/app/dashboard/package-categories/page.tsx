@@ -15,7 +15,14 @@ import {
   getPackageCategories,
   updatePackageCategory,
 } from "@/lib/api/package-categories";
+import {
+  deleteErrorMessage,
+  getAdminErrorMessage,
+  loadErrorMessage,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface CategoryFormState {
   name: string;
@@ -40,6 +47,8 @@ export default function PackageCategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PackageCategory | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const redirectToLogin = useCallback(() => {
@@ -62,7 +71,7 @@ export default function PackageCategoriesPage() {
 
       setCategories(response.data);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load categories."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -130,31 +139,31 @@ export default function PackageCategoriesPage() {
       resetForm();
       await loadCategories();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save category."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleDelete(category: PackageCategory) {
-    const confirmed = window.confirm(
-      `Delete category "${category.name}"? Packages using it will block deletion.`,
-    );
-
-    if (!confirmed) {
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) {
       return;
     }
 
+    setIsDeleting(true);
     setError(null);
 
     try {
       await withAuthRefresh(
-        () => deletePackageCategory(category.id),
+        () => deletePackageCategory(deleteTarget.id),
         redirectToLogin,
       );
+      setDeleteTarget(null);
       await loadCategories();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to delete category."));
+      setError(getAdminErrorMessage(caughtError, deleteErrorMessage));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -162,10 +171,10 @@ export default function PackageCategoriesPage() {
     <section className="mx-auto w-full max-w-6xl">
       <header className="border-b border-zinc-200 pb-6">
         <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-          Package Categories
+          Danh mục gói chụp
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          Category Management
+          Quản lý danh mục
         </h1>
       </header>
 
@@ -181,11 +190,11 @@ export default function PackageCategoriesPage() {
           className="self-start rounded-lg border border-zinc-200 bg-white p-5 shadow-sm"
         >
           <h2 className="text-lg font-semibold">
-            {editingCategory ? "Edit Category" : "New Category"}
+            {editingCategory ? "Chỉnh sửa danh mục" : "Thêm danh mục"}
           </h2>
 
           <label className="mt-5 block text-sm font-medium text-zinc-700">
-            Name
+            Tên
             <input
               value={form.name}
               onChange={(event) =>
@@ -198,19 +207,22 @@ export default function PackageCategoriesPage() {
           </label>
 
           <label className="mt-5 block text-sm font-medium text-zinc-700">
-            Slug
+            Đường dẫn
             <input
               value={form.slug}
               onChange={(event) =>
                 setForm((value) => ({ ...value, slug: event.target.value }))
               }
-              placeholder="Leave empty to generate"
+              placeholder="Để trống để hệ thống tự tạo từ tên"
               className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
+          <p className="mt-2 text-xs text-zinc-500">
+            Đường dẫn dùng trên website, ví dụ: goi-chup-cuoi.
+          </p>
 
           <label className="mt-5 block text-sm font-medium text-zinc-700">
-            Description
+            Mô tả
             <textarea
               value={form.description}
               onChange={(event) =>
@@ -225,7 +237,7 @@ export default function PackageCategoriesPage() {
           </label>
 
           <label className="mt-5 block text-sm font-medium text-zinc-700">
-            Sort Order
+            Thứ tự
             <input
               type="number"
               value={form.sortOrder}
@@ -251,7 +263,7 @@ export default function PackageCategoriesPage() {
               }
               className="h-4 w-4 rounded border-zinc-300 text-emerald-600"
             />
-            Active
+            Hiển thị
           </label>
 
           <div className="mt-6 flex gap-2">
@@ -260,7 +272,7 @@ export default function PackageCategoriesPage() {
               disabled={isSubmitting}
               className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
             >
-              {isSubmitting ? "Saving..." : "Save"}
+              {isSubmitting ? "Đang lưu..." : "Lưu"}
             </button>
             {editingId ? (
               <button
@@ -268,7 +280,7 @@ export default function PackageCategoriesPage() {
                 onClick={resetForm}
                 className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold transition hover:bg-zinc-50"
               >
-                Cancel
+                Hủy
               </button>
             ) : null}
           </div>
@@ -276,12 +288,12 @@ export default function PackageCategoriesPage() {
 
         <div className="overflow-x-auto">
           {isLoading ? (
-            <p className="text-sm text-zinc-600">Loading categories...</p>
+            <p className="text-sm text-zinc-600">Đang tải...</p>
           ) : null}
 
           {!isLoading && categories.length === 0 ? (
             <p className="rounded-lg border border-zinc-200 bg-white p-6 text-sm text-zinc-600">
-              No categories found.
+              Chưa có dữ liệu.
             </p>
           ) : null}
 
@@ -289,11 +301,11 @@ export default function PackageCategoriesPage() {
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase tracking-normal text-zinc-500">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Name</th>
-                  <th className="px-4 py-3 font-semibold">Slug</th>
-                  <th className="px-4 py-3 font-semibold">Active</th>
-                  <th className="px-4 py-3 font-semibold">Sort Order</th>
-                  <th className="px-4 py-3 font-semibold">Actions</th>
+                  <th className="px-4 py-3 font-semibold">Tên</th>
+                  <th className="px-4 py-3 font-semibold">Đường dẫn</th>
+                  <th className="px-4 py-3 font-semibold">Hiển thị</th>
+                  <th className="px-4 py-3 font-semibold">Thứ tự</th>
+                  <th className="px-4 py-3 font-semibold">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200">
@@ -302,7 +314,7 @@ export default function PackageCategoriesPage() {
                     <td className="px-4 py-3 font-semibold">{category.name}</td>
                     <td className="px-4 py-3 text-zinc-600">{category.slug}</td>
                     <td className="px-4 py-3 text-zinc-600">
-                      {category.isActive ? "Active" : "Inactive"}
+                      {category.isActive ? "Đang hiển thị" : "Đã ẩn"}
                     </td>
                     <td className="px-4 py-3 text-zinc-600">
                       {category.sortOrder}
@@ -314,14 +326,14 @@ export default function PackageCategoriesPage() {
                           onClick={() => startEdit(category)}
                           className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-semibold transition hover:bg-zinc-50"
                         >
-                          Edit
+                          Chỉnh sửa
                         </button>
                         <button
                           type="button"
-                          onClick={() => void handleDelete(category)}
+                          onClick={() => setDeleteTarget(category)}
                           className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                         >
-                          Delete
+                          Xóa
                         </button>
                       </div>
                     </td>
@@ -332,10 +344,23 @@ export default function PackageCategoriesPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Xóa danh mục gói chụp?"
+        description={
+          <>
+            Bạn có chắc muốn xóa{" "}
+            <span className="font-semibold text-zinc-900">
+              {deleteTarget?.name}
+            </span>
+            ? Nếu danh mục đang được sử dụng, hệ thống sẽ không cho xóa.
+          </>
+        }
+        isLoading={isDeleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void handleDeleteConfirm()}
+      />
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

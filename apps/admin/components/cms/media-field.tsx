@@ -35,12 +35,12 @@ export function SingleMediaField({
             onClick={() => onChange([])}
             className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
           >
-            Remove
+            Gỡ bỏ
           </button>
         </div>
       ) : (
         <p className="mb-3 rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-          No image selected.
+          Chưa chọn ảnh.
         </p>
       )}
       <MediaPicker
@@ -87,12 +87,14 @@ export function MultiMediaField({
           selected={value}
           onChange={onChange}
           maxSelection={maxSelection}
-          maxSelectionMessage={`Selection can contain up to ${maxSelection} images.`}
+          maxSelectionMessage={
+            maxSelection ? `Có thể chọn tối đa ${maxSelection} ảnh.` : undefined
+          }
         />
       </div>
       {value.length === 0 ? (
         <p className="rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-          No images selected.
+          Chưa chọn ảnh nào.
         </p>
       ) : (
         <div className="space-y-3">
@@ -111,7 +113,7 @@ export function MultiMediaField({
                 disabled={index === 0}
                 className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
               >
-                Move Up
+                Di chuyển lên
               </button>
               <button
                 type="button"
@@ -119,7 +121,7 @@ export function MultiMediaField({
                 disabled={index === value.length - 1}
                 className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
               >
-                Move Down
+                Di chuyển xuống
               </button>
               <button
                 type="button"
@@ -128,7 +130,7 @@ export function MultiMediaField({
                 }
                 className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
               >
-                Remove
+                Gỡ bỏ
               </button>
             </div>
           ))}
@@ -151,4 +153,3 @@ function MediaThumb({ item }: { item: MediaChoice }) {
     </div>
   );
 }
-

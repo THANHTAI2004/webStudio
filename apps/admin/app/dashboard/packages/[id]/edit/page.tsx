@@ -9,6 +9,7 @@ import {
   getPackageCategories,
 } from "@/lib/api/package-categories";
 import { type AdminPackage, getPackageById } from "@/lib/api/packages";
+import { getAdminErrorMessage, loadErrorMessage } from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 export default function EditPackagePage() {
@@ -42,7 +43,7 @@ export default function EditPackagePage() {
           setPackageItem(packageResponse.data);
           setCategories(categoryResponse.data);
         } catch (caughtError) {
-          setError(getErrorMessage(caughtError, "Unable to load package."));
+          setError(getAdminErrorMessage(caughtError, loadErrorMessage));
         } finally {
           setIsLoading(false);
         }
@@ -63,10 +64,10 @@ export default function EditPackagePage() {
           href="/dashboard/packages"
           className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
         >
-          Packages
+          Gói chụp
         </Link>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          Edit Package
+          Chỉnh sửa gói chụp
         </h1>
       </header>
 
@@ -77,7 +78,7 @@ export default function EditPackagePage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading form...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       {!isLoading && packageItem && categories.length > 0 ? (
@@ -87,8 +88,4 @@ export default function EditPackagePage() {
       ) : null}
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

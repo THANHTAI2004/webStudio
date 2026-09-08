@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { PageHero } from "@/components/ui/public-ui";
 import { getLocations } from "@/lib/api/locations";
 import { getPackages } from "@/lib/api/packages";
 import { BookingForm } from "./booking-form";
 
 export const metadata: Metadata = {
-  title: "\u0110\u1eb7t l\u1ecbch | Studio",
+  title: "Đặt lịch | Studio",
   description:
-    "G\u1eedi y\u00eau c\u1ea7u \u0111\u1eb7t l\u1ecbch ch\u1ee5p \u1ea3nh v\u1edbi Studio.",
+    "Gửi yêu cầu đặt lịch chụp ảnh với Studio để được liên hệ xác nhận lịch.",
 };
 
 interface BookingPageProps {
@@ -33,28 +34,47 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
   ]);
 
   return (
-    <main className="min-h-screen bg-stone-50 text-zinc-950">
-      <section className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <header className="border-b border-zinc-200 pb-6 lg:border-b-0 lg:border-r lg:pr-8">
-          <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Studio
-          </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-normal">
-            {"\u0110\u1eb7t l\u1ecbch ch\u1ee5p"}
-          </h1>
-          <p className="mt-5 text-base leading-7 text-zinc-600">
-            {
-              "Ch\u1ecdn g\u00f3i ch\u1ee5p, th\u1eddi gian mong mu\u1ed1n v\u00e0 \u0111\u1ec3 l\u1ea1i th\u00f4ng tin li\u00ean h\u1ec7. Studio s\u1ebd ph\u1ea3n h\u1ed3i \u0111\u1ec3 x\u00e1c nh\u1eadn l\u1ecbch."
-            }
-          </p>
-        </header>
+    <main>
+      <PageHero
+        eyebrow="Đặt lịch"
+        title="Đặt lịch chụp"
+        description="Gửi thông tin, Studio sẽ liên hệ xác nhận lịch và tư vấn cách chuẩn bị trước buổi chụp."
+      />
 
-        <BookingForm
-          packages={packageResponse?.data ?? []}
-          locations={locations}
-          preselectedPackageSlug={packageSlug}
-          preselectedLocationSlug={locationSlug}
-        />
+      <section className="public-section">
+        <div className="site-container grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+          <aside className="lg:sticky lg:top-28">
+            <div className="border-t border-[var(--color-border)] pt-6">
+              <p className="section-eyebrow">Quy trình</p>
+              <ol className="mt-6 grid gap-5 text-sm leading-7 text-[var(--color-muted)]">
+                {[
+                  "Chọn gói chụp phù hợp",
+                  "Đề xuất ngày và giờ mong muốn",
+                  "Để lại thông tin liên hệ",
+                  "Studio liên hệ xác nhận lịch",
+                ].map((item, index) => (
+                  <li key={item} className="flex gap-4">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-extrabold text-white">
+                      {index + 1}
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-7 text-sm leading-7 text-[var(--color-muted)]">
+                Yêu cầu đặt lịch chưa phải lịch đã xác nhận. Studio sẽ kiểm tra
+                lịch trống và phản hồi lại bạn.
+              </p>
+            </div>
+          </aside>
+
+          <BookingForm
+            packages={packageResponse?.data ?? []}
+            locations={locations}
+            preselectedPackageSlug={packageSlug}
+            preselectedLocationSlug={locationSlug}
+          />
+        </div>
       </section>
     </main>
   );

@@ -85,7 +85,7 @@ export const fallbackSettings: PublicSettings = {
   },
   defaultSeo: {
     title: "Studio",
-    description: "Studio photography services.",
+    description: "Dịch vụ chụp ảnh chuyên nghiệp cho những khoảnh khắc đáng nhớ.",
     ogImage: null,
   },
   footer: {

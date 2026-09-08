@@ -79,17 +79,17 @@ export function AlbumLightbox({ images, albumTitle }: AlbumLightboxProps) {
           <div
             role="dialog"
             aria-modal="true"
-            aria-label={`${albumTitle} gallery preview`}
+            aria-label={`Xem ảnh trong album ${albumTitle}`}
             className="relative flex h-full w-full max-w-6xl flex-col items-center justify-center"
             onClick={(event) => event.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setActiveIndex(null)}
-              aria-label="Close album gallery"
-              className="absolute right-0 top-0 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              aria-label="Đóng bộ ảnh"
+              className="absolute right-0 top-0 min-h-11 rounded-md border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
             >
-              Close
+              Đóng
             </button>
 
             <button
@@ -99,10 +99,10 @@ export function AlbumLightbox({ images, albumTitle }: AlbumLightboxProps) {
                   getPreviousIndex(current, images.length),
                 )
               }
-              aria-label="Previous image"
-              className="absolute left-0 top-1/2 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              aria-label="Ảnh trước"
+              className="absolute left-0 top-1/2 min-h-11 rounded-md border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
             >
-              Prev
+              Trước
             </button>
 
             <Image
@@ -122,10 +122,10 @@ export function AlbumLightbox({ images, albumTitle }: AlbumLightboxProps) {
                   getNextIndex(current, images.length),
                 )
               }
-              aria-label="Next image"
-              className="absolute right-0 top-1/2 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              aria-label="Ảnh sau"
+              className="absolute right-0 top-1/2 min-h-11 rounded-md border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
             >
-              Next
+              Sau
             </button>
 
             <p className="mt-4 text-sm font-medium text-white">

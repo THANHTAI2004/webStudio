@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { PublicButtonLink, SectionHeader } from "@/components/ui/public-ui";
 import { getMediaAssetUrl } from "@/lib/api/client";
 import { getPublicAbout } from "@/lib/api/about";
 import { getPublicSettings } from "@/lib/api/settings";
@@ -12,14 +13,14 @@ export async function generateMetadata(): Promise<Metadata> {
     getPublicAbout({ cache: "no-store" }),
   ]);
   const title =
-    about.seo.title || `Gi\u1edbi thi\u1ec7u | ${settings.studioName}`;
+    about.seo.title || `Giới thiệu | ${settings.studioName}`;
   const description =
     about.seo.description ||
     about.story.plainText ||
     about.hero.subtitle ||
     settings.defaultSeo.description ||
     settings.tagline ||
-    "Studio photography services.";
+    "Câu chuyện, phong cách và đội ngũ đứng sau Studio.";
   const ogImage =
     about.seo.ogImage ?? about.hero.media ?? settings.defaultSeo.ogImage;
 
@@ -49,69 +50,48 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AboutPage() {
   const about = await getPublicAbout({ cache: "no-store" });
+  const heroTitle = about.hero.title || "Giới thiệu";
 
   return (
     <main>
-      <section className="py-14 md:py-20">
-        <div className="site-container grid gap-10 lg:grid-cols-[1fr_0.95fr] lg:items-center">
-          <div>
-            {about.hero.eyebrow ? (
-              <p
-                className="text-sm font-bold uppercase tracking-normal"
-                style={{ color: "var(--color-primary)" }}
-              >
-                {about.hero.eyebrow}
-              </p>
-            ) : null}
-            <h1
-              className="mt-4 text-5xl font-semibold leading-tight md:text-7xl"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
-              {about.hero.title || "Gi\u1edbi thi\u1ec7u"}
-            </h1>
+      <section className="public-section">
+        <div className="site-container grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-end">
+          <header>
+            <p className="section-eyebrow">{about.hero.eyebrow || "Studio"}</p>
+            <h1 className="display-heading">{heroTitle}</h1>
             {about.hero.subtitle ? (
-              <p className="mt-5 max-w-2xl text-base leading-8 text-zinc-600 md:text-lg">
-                {about.hero.subtitle}
-              </p>
+              <p className="page-hero__lead">{about.hero.subtitle}</p>
             ) : null}
-          </div>
-          <div className="relative aspect-[4/3] overflow-hidden theme-card">
+          </header>
+
+          <div className="image-frame aspect-[4/3]">
             {about.hero.media ? (
               <Image
                 src={getMediaAssetUrl(about.hero.media.url)}
-                alt={about.hero.media.alt || about.hero.title}
+                alt={about.hero.media.alt || heroTitle}
                 fill
                 priority
-                sizes="(min-width: 1024px) 45vw, 100vw"
+                sizes="(min-width: 1024px) 54vw, 100vw"
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-zinc-500">
-                Studio
-              </div>
+              <div className="media-fallback">Studio</div>
             )}
           </div>
         </div>
       </section>
 
       {about.story.heading || about.story.contentHtml || about.story.media ? (
-        <section
-          className="py-16 md:py-20"
-          style={{ backgroundColor: "var(--color-surface)" }}
-        >
-          <div className="site-container grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+        <section className="public-section public-section--surface">
+          <div className="site-container grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
             <div>
-              {about.story.heading ? (
-                <h2
-                  className="text-3xl font-semibold leading-tight md:text-5xl"
-                  style={{ fontFamily: "var(--font-heading)" }}
-                >
-                  {about.story.heading}
-                </h2>
-              ) : null}
+              <SectionHeader
+                eyebrow="Câu chuyện"
+                title={about.story.heading || "Câu chuyện của Studio"}
+              />
               {about.story.contentHtml ? (
                 <div
-                  className="cms-rich-text mt-6"
+                  className="cms-rich-text mt-8"
                   dangerouslySetInnerHTML={{
                     __html: about.story.contentHtml,
                   }}
@@ -119,10 +99,10 @@ export default async function AboutPage() {
               ) : null}
             </div>
             {about.story.media ? (
-              <div className="relative aspect-[4/3] overflow-hidden theme-card">
+              <div className="image-frame aspect-[4/5]">
                 <Image
                   src={getMediaAssetUrl(about.story.media.url)}
-                  alt={about.story.media.alt || about.story.heading}
+                  alt={about.story.media.alt || about.story.heading || heroTitle}
                   fill
                   sizes="(min-width: 1024px) 42vw, 100vw"
                   className="object-cover"
@@ -134,30 +114,29 @@ export default async function AboutPage() {
       ) : null}
 
       {about.philosophy.items.length > 0 ? (
-        <section className="py-16 md:py-20">
+        <section className="public-section">
           <div className="site-container">
-            {about.philosophy.heading ? (
-              <h2
-                className="max-w-2xl text-3xl font-semibold leading-tight md:text-5xl"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                {about.philosophy.heading}
-              </h2>
-            ) : null}
-            <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <SectionHeader
+              eyebrow="Phong cách"
+              title={about.philosophy.heading || "Giá trị và phong cách"}
+            />
+            <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {about.philosophy.items.map((item, index) => (
                 <article
                   key={`${item.title}-${index}`}
-                  className="theme-card p-5"
+                  className="border-t border-[var(--color-border)] pt-5"
                 >
+                  <p className="section-eyebrow">
+                    {String(index + 1).padStart(2, "0")}
+                  </p>
                   <h3
-                    className="text-lg font-semibold"
+                    className="mt-4 text-2xl font-semibold leading-tight"
                     style={{ fontFamily: "var(--font-heading)" }}
                   >
                     {item.title}
                   </h3>
                   {item.description ? (
-                    <p className="mt-3 text-sm leading-6 text-zinc-600">
+                    <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
                       {item.description}
                     </p>
                   ) : null}
@@ -168,27 +147,40 @@ export default async function AboutPage() {
         </section>
       ) : null}
 
-      {about.team.enabled && about.team.members.length > 0 ? (
-        <section
-          className="py-16 md:py-20"
-          style={{ backgroundColor: "var(--color-surface)" }}
-        >
-          <div className="site-container">
-            {about.team.heading ? (
-              <h2
-                className="max-w-2xl text-3xl font-semibold leading-tight md:text-5xl"
-                style={{ fontFamily: "var(--font-heading)" }}
+      {about.metrics.length > 0 ? (
+        <section className="public-section public-section--surface">
+          <div className="site-container grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {about.metrics.map((metric, index) => (
+              <div
+                key={`${metric.value}-${index}`}
+                className="border-t border-[var(--color-border)] pt-6"
               >
-                {about.team.heading}
-              </h2>
-            ) : null}
-            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {about.team.members.map((member, index) => (
-                <article
-                  key={`${member.name}-${index}`}
-                  className="theme-card overflow-hidden"
+                <p
+                  className="text-5xl font-semibold text-[var(--color-accent)]"
+                  style={{ fontFamily: "var(--font-heading)" }}
                 >
-                  <div className="relative aspect-[4/3] bg-zinc-100">
+                  {metric.value}
+                </p>
+                <p className="mt-3 text-sm font-semibold text-[var(--color-muted)]">
+                  {metric.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {about.team.enabled && about.team.members.length > 0 ? (
+        <section className="public-section">
+          <div className="site-container">
+            <SectionHeader
+              eyebrow="Đội ngũ"
+              title={about.team.heading || "Những người đứng sau ống kính"}
+            />
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {about.team.members.map((member, index) => (
+                <article key={`${member.name}-${index}`} className="public-card">
+                  <div className="image-frame aspect-[4/3]">
                     {member.media ? (
                       <Image
                         src={getMediaAssetUrl(member.media.url)}
@@ -198,28 +190,23 @@ export default async function AboutPage() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex h-full items-center justify-center text-sm text-zinc-500">
-                        Team
-                      </div>
+                      <div className="media-fallback">Đội ngũ</div>
                     )}
                   </div>
-                  <div className="p-5">
+                  <div className="p-5 md:p-6">
                     <h3
-                      className="text-xl font-semibold"
+                      className="text-2xl font-semibold leading-tight"
                       style={{ fontFamily: "var(--font-heading)" }}
                     >
                       {member.name}
                     </h3>
                     {member.role ? (
-                      <p
-                        className="mt-1 text-sm font-bold"
-                        style={{ color: "var(--color-primary)" }}
-                      >
+                      <p className="mt-2 text-sm font-extrabold text-[var(--color-accent)]">
                         {member.role}
                       </p>
                     ) : null}
                     {member.bio ? (
-                      <p className="mt-3 text-sm leading-6 text-zinc-600">
+                      <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
                         {member.bio}
                       </p>
                     ) : null}
@@ -231,74 +218,44 @@ export default async function AboutPage() {
         </section>
       ) : null}
 
-      {about.metrics.length > 0 ? (
-        <section className="py-16 md:py-20">
-          <div className="site-container grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {about.metrics.map((metric, index) => (
-              <div key={`${metric.value}-${index}`} className="theme-card p-6">
-                <p
-                  className="text-4xl font-semibold"
-                  style={{
-                    color: "var(--color-primary)",
-                    fontFamily: "var(--font-heading)",
-                  }}
-                >
-                  {metric.value}
-                </p>
-                <p className="mt-2 text-sm font-semibold text-zinc-600">
-                  {metric.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       {about.gallery.length > 0 ? (
-        <section
-          className="py-16 md:py-20"
-          style={{ backgroundColor: "var(--color-surface)" }}
-        >
-          <div className="site-container grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {about.gallery.map((image) => (
-              <div
-                key={image.id}
-                className="relative aspect-[4/3] overflow-hidden theme-card"
-              >
-                <Image
-                  src={getMediaAssetUrl(image.medium.url)}
-                  alt={image.alt}
-                  fill
-                  sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
-                />
-              </div>
-            ))}
+        <section className="public-section public-section--surface">
+          <div className="site-container">
+            <SectionHeader eyebrow="Không gian" title="Hình ảnh Studio" />
+            <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {about.gallery.map((image) => (
+                <div key={image.id} className="image-frame aspect-[4/3]">
+                  <Image
+                    src={getMediaAssetUrl(image.medium.url)}
+                    alt={image.alt || "Hình ảnh Studio"}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       ) : null}
 
       {about.bookingCta.heading || about.bookingCta.description ? (
-        <section className="py-16 md:py-20">
+        <section className="public-section">
           <div className="site-container">
-            <div
-              className="p-8 text-center md:p-12 theme-card"
-              style={{ backgroundColor: "var(--color-secondary)" }}
-            >
-              <h2
-                className="text-3xl font-semibold text-white md:text-5xl"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                {about.bookingCta.heading}
-              </h2>
-              {about.bookingCta.description ? (
-                <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-white/80">
-                  {about.bookingCta.description}
-                </p>
-              ) : null}
-              <Link href="/dat-lich" className="theme-button-primary mt-7">
-                {about.bookingCta.buttonLabel || "\u0110\u1eb7t l\u1ecbch"}
-              </Link>
+            <div className="border-t border-[var(--color-border)] pt-10">
+              <SectionHeader
+                eyebrow="Tư vấn lịch chụp"
+                title={about.bookingCta.heading || "Cùng Studio lên kế hoạch buổi chụp"}
+                description={about.bookingCta.description}
+              />
+              <div className="mt-8 flex flex-wrap gap-3">
+                <PublicButtonLink href="/dat-lich">
+                  {about.bookingCta.buttonLabel || "Đặt lịch chụp"}
+                </PublicButtonLink>
+                <Link href="/album" className="theme-button-secondary">
+                  Xem album
+                </Link>
+              </div>
             </div>
           </div>
         </section>

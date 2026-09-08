@@ -9,6 +9,12 @@ import {
   getContacts,
 } from "@/lib/api/contacts";
 import { type AdminLocation, getLocations } from "@/lib/api/locations";
+import {
+  customLabel,
+  formatAdminDateTime,
+  getAdminErrorMessage,
+  loadErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 import {
   contactStatusLabels,
@@ -70,7 +76,7 @@ export default function ContactsPage() {
       setTotalPages(contactResponse.pagination.totalPages);
       setLocations(locationResponse.data);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load contacts."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -98,10 +104,10 @@ export default function ContactsPage() {
     <section className="mx-auto w-full max-w-7xl">
       <header className="border-b border-zinc-200 pb-6">
         <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-          Contacts
+          Liên hệ
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          Contact Inbox
+          Hộp thư liên hệ
         </h1>
       </header>
 
@@ -113,7 +119,7 @@ export default function ContactsPage() {
             setPage(1);
             setSearch(event.target.value);
           }}
-          placeholder="Search code, customer, subject"
+          placeholder="Tìm mã, khách hàng, chủ đề"
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         />
         <select
@@ -124,7 +130,7 @@ export default function ContactsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="">All status</option>
+          <option value="">Tất cả trạng thái</option>
           {contactStatuses.map((item) => (
             <option key={item} value={item}>
               {contactStatusLabels[item]}
@@ -139,7 +145,7 @@ export default function ContactsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="">All locations</option>
+          <option value="">Tất cả cơ sở</option>
           {locations.map((location) => (
             <option key={location.id} value={location.id}>
               {location.name}
@@ -173,28 +179,28 @@ export default function ContactsPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading contacts...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       <div className="mt-8 overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
         <table className="w-full min-w-[980px] text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase tracking-normal text-zinc-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">Code</th>
-              <th className="px-4 py-3 font-semibold">Customer</th>
-              <th className="px-4 py-3 font-semibold">Phone</th>
-              <th className="px-4 py-3 font-semibold">Subject</th>
-              <th className="px-4 py-3 font-semibold">Location</th>
-              <th className="px-4 py-3 font-semibold">Status</th>
-              <th className="px-4 py-3 font-semibold">Created</th>
-              <th className="px-4 py-3 font-semibold">Action</th>
+              <th className="px-4 py-3 font-semibold">Mã liên hệ</th>
+              <th className="px-4 py-3 font-semibold">Khách hàng</th>
+              <th className="px-4 py-3 font-semibold">Số điện thoại</th>
+              <th className="px-4 py-3 font-semibold">Chủ đề</th>
+              <th className="px-4 py-3 font-semibold">Cơ sở</th>
+              <th className="px-4 py-3 font-semibold">Trạng thái</th>
+              <th className="px-4 py-3 font-semibold">Ngày tạo</th>
+              <th className="px-4 py-3 font-semibold">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200">
             {!isLoading && contacts.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
-                  No contacts found.
+                  Không tìm thấy kết quả.
                 </td>
               </tr>
             ) : null}
@@ -215,20 +221,20 @@ export default function ContactsPage() {
                   <p className="line-clamp-2">{contact.subject}</p>
                 </td>
                 <td className="px-4 py-3 text-zinc-600">
-                  {contact.location?.name ?? "Custom"}
+                  {contact.location?.name ?? customLabel}
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge status={contact.status} />
                 </td>
                 <td className="px-4 py-3 text-zinc-600">
-                  {formatDate(contact.createdAt)}
+                  {formatAdminDateTime(contact.createdAt)}
                 </td>
                 <td className="px-4 py-3">
                   <Link
                     href={`/dashboard/contacts/${contact.id}`}
                     className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-semibold transition hover:bg-zinc-50"
                   >
-                    View
+                    Xem
                   </Link>
                 </td>
               </tr>
@@ -244,7 +250,7 @@ export default function ContactsPage() {
           onClick={() => setPage((value) => Math.max(1, value - 1))}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
         >
-          Previous
+          Trước
         </button>
         <span className="min-w-20 text-center text-sm text-zinc-600">
           {page} / {Math.max(totalPages, 1)}
@@ -255,7 +261,7 @@ export default function ContactsPage() {
           onClick={() => setPage((value) => value + 1)}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
         >
-          Next
+          Sau
         </button>
       </div>
     </section>
@@ -272,15 +278,4 @@ function StatusBadge({ status }: { status: ContactStatus }) {
       {contactStatusLabels[status]}
     </span>
   );
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

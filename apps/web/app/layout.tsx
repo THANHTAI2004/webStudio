@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const description =
     settings.defaultSeo.description ||
     settings.tagline ||
-    "Studio photography services.";
+    "Dịch vụ chụp ảnh chuyên nghiệp cho những khoảnh khắc đáng nhớ.";
   const metadataBase = getSiteUrl() ?? undefined;
   const ogImage = settings.defaultSeo.ogImage;
 

@@ -75,7 +75,7 @@ interface CmsRequestOptions {
 export const fallbackAbout: PublicAbout = {
   hero: {
     eyebrow: "",
-    title: "Gioi thieu",
+    title: "Giới thiệu",
     subtitle: "",
     media: null,
   },
@@ -99,7 +99,7 @@ export const fallbackAbout: PublicAbout = {
   bookingCta: {
     heading: "",
     description: "",
-    buttonLabel: "Dat lich",
+    buttonLabel: "Đặt lịch",
   },
   seo: {
     title: "",

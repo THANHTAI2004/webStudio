@@ -17,6 +17,11 @@ import {
   updateBookingStatus,
 } from "@/lib/api/bookings";
 import { type AdminPackage, getPackages } from "@/lib/api/packages";
+import {
+  getAdminErrorMessage,
+  loadErrorMessage,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 import {
   bookingStatusLabels,
@@ -66,7 +71,7 @@ export default function BookingDetailPage() {
         setPackages(packageResponse.data);
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load booking."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -163,10 +168,10 @@ export default function BookingDetailPage() {
       if (response) {
         setBooking(response.data);
         setForm(toFormState(response.data));
-        setNotice("Booking saved.");
+        setNotice("Đã lưu thay đổi.");
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save booking."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSaving(false);
     }
@@ -191,10 +196,15 @@ export default function BookingDetailPage() {
         setBooking(response.data);
         setForm(toFormState(response.data));
         setStatusNote("");
-        setNotice("Status updated.");
+        setNotice("Đã cập nhật trạng thái.");
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to update status."));
+      setError(
+        getAdminErrorMessage(
+          caughtError,
+          "Không thể cập nhật trạng thái. Vui lòng thử lại.",
+        ),
+      );
     } finally {
       setUpdatingStatus(null);
     }
@@ -203,7 +213,7 @@ export default function BookingDetailPage() {
   if (isLoading) {
     return (
       <main className="mx-auto w-full max-w-6xl">
-        <p className="text-sm text-zinc-600">Loading booking...</p>
+        <p className="text-sm text-zinc-600">Đang tải...</p>
       </main>
     );
   }
@@ -212,7 +222,7 @@ export default function BookingDetailPage() {
     return (
       <main className="mx-auto w-full max-w-6xl">
         <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error ?? "Booking not found."}
+          {error ?? "Không tìm thấy lịch chụp."}
         </p>
       </main>
     );
@@ -258,10 +268,10 @@ export default function BookingDetailPage() {
       <div className="mt-8 grid gap-8 xl:grid-cols-[1fr_360px]">
         <form onSubmit={handleSave} className="space-y-8">
           <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-            <h2 className="text-lg font-semibold">Customer</h2>
+            <h2 className="text-lg font-semibold">Khách hàng</h2>
             <div className="space-y-5">
               <TextField
-                label="Name"
+                label="Tên"
                 value={form.customerName}
                 onChange={(value) =>
                   setForm((current) =>
@@ -271,7 +281,7 @@ export default function BookingDetailPage() {
                 required
               />
               <TextField
-                label="Phone"
+                label="Số điện thoại"
                 value={form.phone}
                 onChange={(value) =>
                   setForm((current) =>
@@ -294,10 +304,10 @@ export default function BookingDetailPage() {
           </section>
 
           <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-            <h2 className="text-lg font-semibold">Package snapshot</h2>
+            <h2 className="text-lg font-semibold">Gói chụp</h2>
             <div className="space-y-5">
               <label className="block text-sm font-medium text-zinc-700">
-                Package
+                Gói chụp
                 <select
                   value={form.packageId}
                   onChange={(event) =>
@@ -323,12 +333,12 @@ export default function BookingDetailPage() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-3">
                   <p>
-                    Price:{" "}
+                    Giá:{" "}
                     {currencyFormatter.format(booking.packageSnapshot.price)}
                   </p>
                   {booking.packageSnapshot.salePrice !== null ? (
                     <p>
-                      Sale:{" "}
+                      Giá khuyến mãi:{" "}
                       {currencyFormatter.format(
                         booking.packageSnapshot.salePrice,
                       )}
@@ -340,10 +350,10 @@ export default function BookingDetailPage() {
           </section>
 
           <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-            <h2 className="text-lg font-semibold">Schedule</h2>
+            <h2 className="text-lg font-semibold">Lịch chụp</h2>
             <div className="grid gap-5 sm:grid-cols-2">
               <TextField
-                label="Date"
+                label="Ngày chụp"
                 type="date"
                 value={form.shootDate}
                 onChange={(value) =>
@@ -354,7 +364,7 @@ export default function BookingDetailPage() {
                 required
               />
               <TextField
-                label="Time"
+                label="Giờ chụp"
                 type="time"
                 value={form.shootTime}
                 onChange={(value) =>
@@ -365,7 +375,7 @@ export default function BookingDetailPage() {
                 required
               />
               <TextField
-                label="People"
+                label="Số người"
                 type="number"
                 value={form.peopleCount}
                 onChange={(value) =>
@@ -376,7 +386,7 @@ export default function BookingDetailPage() {
                 required
               />
               <TextField
-                label="Location"
+                label="Địa điểm"
                 value={form.location}
                 onChange={(value) =>
                   setForm((current) =>
@@ -389,10 +399,10 @@ export default function BookingDetailPage() {
           </section>
 
           <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-            <h2 className="text-lg font-semibold">Notes</h2>
+            <h2 className="text-lg font-semibold">Ghi chú</h2>
             <div className="space-y-5">
               <TextAreaField
-                label="Customer Note"
+                label="Ghi chú của khách"
                 value={form.customerNote}
                 onChange={(value) =>
                   setForm((current) =>
@@ -401,7 +411,7 @@ export default function BookingDetailPage() {
                 }
               />
               <TextAreaField
-                label="Admin Note"
+                label="Ghi chú nội bộ"
                 value={form.adminNote}
                 onChange={(value) =>
                   setForm((current) =>
@@ -418,16 +428,16 @@ export default function BookingDetailPage() {
               disabled={isSaving}
               className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
             >
-              {isSaving ? "Saving..." : "Save"}
+              {isSaving ? "Đang lưu..." : "Lưu"}
             </button>
           </div>
         </form>
 
         <aside className="space-y-6">
           <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold">Workflow</h2>
+            <h2 className="text-lg font-semibold">Xử lý lịch chụp</h2>
             <label className="mt-4 block text-sm font-medium text-zinc-700">
-              Status note
+              Ghi chú trạng thái
               <textarea
                 value={statusNote}
                 onChange={(event) => setStatusNote(event.target.value)}
@@ -448,7 +458,7 @@ export default function BookingDetailPage() {
                   )}`}
                 >
                   {updatingStatus === status
-                    ? "Updating..."
+                    ? "Đang cập nhật..."
                     : bookingStatusLabels[status]}
                 </button>
               ))}
@@ -456,7 +466,7 @@ export default function BookingDetailPage() {
           </section>
 
           <section className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold">Status History</h2>
+            <h2 className="text-lg font-semibold">Lịch sử trạng thái</h2>
             <ol className="mt-5 space-y-4">
               {booking.statusHistory.map((item, index) => (
                 <li
@@ -587,8 +597,4 @@ function formatDateTime(value: string): string {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

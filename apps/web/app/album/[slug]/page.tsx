@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlbumLightbox } from "@/components/albums/album-lightbox";
+import { PublicButtonLink, SectionHeader, dateFormatter } from "@/components/ui/public-ui";
 import { getMediaAssetUrl } from "@/lib/api/client";
 import {
   getAlbumBySlug,
@@ -10,7 +11,7 @@ import {
   type PublicMediaPreview,
 } from "@/lib/api/albums";
 
-const LIST_TITLE = "Album \u1ea3nh";
+const LIST_TITLE = "Album ảnh";
 
 interface AlbumDetailPageProps {
   params: Promise<{
@@ -26,7 +27,7 @@ export async function generateMetadata({
 
   if (!album) {
     return {
-      title: "Album not found | Studio",
+      title: "Không tìm thấy album | Studio",
     };
   }
 
@@ -70,76 +71,91 @@ export default async function AlbumDetailPage({
   const jsonLd = createImageGalleryJsonLd(album);
 
   return (
-    <main className="min-h-screen bg-stone-50 text-zinc-950">
+    <main>
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      <article className="mx-auto w-full max-w-6xl px-6 py-10">
-        <nav className="text-sm text-zinc-500">
-          <Link href="/album" className="font-medium hover:text-zinc-900">
-            {LIST_TITLE}
-          </Link>
-          <span className="px-2">/</span>
-          <span>{album.title}</span>
-        </nav>
+      <article>
+        <section className="public-section">
+          <div className="site-container">
+            <nav className="public-breadcrumb" aria-label="Đường dẫn">
+              <Link href="/album">{LIST_TITLE}</Link>
+              <span>/</span>
+              <span>{album.title}</span>
+            </nav>
 
-        <header className="mt-6 grid gap-8 border-b border-zinc-200 pb-8 lg:grid-cols-[1fr_0.95fr] lg:items-start">
-          <div>
-            {album.category ? (
-              <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-                {album.category.name}
-              </p>
-            ) : null}
-            <h1 className="mt-3 text-4xl font-semibold tracking-normal">
-              {album.title}
-            </h1>
+            <div className="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-end">
+              <header>
+                <p className="section-eyebrow">
+                  {album.category?.name ?? "Portfolio"}
+                </p>
+                <h1 className="display-heading">{album.title}</h1>
+                <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-[var(--color-muted)]">
+                  {album.location ? <span>{album.location}</span> : null}
+                  {album.shootingDate ? (
+                    <span>{dateFormatter.format(new Date(album.shootingDate))}</span>
+                  ) : null}
+                </div>
+                {album.description ? (
+                  <p className="page-hero__lead">{album.description}</p>
+                ) : null}
+              </header>
 
-            <div className="mt-5 flex flex-wrap gap-3 text-sm text-zinc-600">
-              {album.location ? (
-                <p className="rounded-md border border-zinc-200 bg-white px-3 py-2 font-semibold">
-                  {album.location}
-                </p>
-              ) : null}
-              {album.shootingDate ? (
-                <p className="rounded-md border border-zinc-200 bg-white px-3 py-2 font-semibold">
-                  {formatDate(album.shootingDate)}
-                </p>
+              {album.cover ? (
+                <div className="image-frame aspect-[4/3]">
+                  <Image
+                    src={getMediaAssetUrl(album.cover.url)}
+                    alt={album.cover.alt || album.title}
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 54vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
               ) : null}
             </div>
-
-            {album.description ? (
-              <p className="mt-6 whitespace-pre-line text-base leading-7 text-zinc-600">
-                {album.description}
-              </p>
-            ) : null}
           </div>
-
-          {album.cover ? (
-            <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100">
-              <Image
-                src={getMediaAssetUrl(album.cover.url)}
-                alt={album.cover.alt || album.title}
-                fill
-                priority
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover"
-              />
-            </div>
-          ) : null}
-        </header>
+        </section>
 
         {album.gallery.length > 0 ? (
-          <section className="border-b border-zinc-200 py-8">
-            <AlbumLightbox images={album.gallery} albumTitle={album.title} />
+          <section className="public-section public-section--surface">
+            <div className="site-container">
+              <SectionHeader
+                eyebrow="Bộ ảnh"
+                title="Khoảnh khắc được chọn lọc"
+                description="Bấm vào từng ảnh để xem rõ hơn trong chế độ toàn màn hình."
+              />
+              <div className="mt-10">
+                <AlbumLightbox images={album.gallery} albumTitle={album.title} />
+              </div>
+            </div>
           </section>
         ) : null}
 
         {album.content ? (
-          <section className="py-8">
-            <h2 className="text-lg font-semibold">Story</h2>
-            <p className="mt-4 whitespace-pre-line text-base leading-8 text-zinc-700">
-              {album.content}
-            </p>
+          <section className="public-section">
+            <div className="site-container">
+              <div className="mx-auto max-w-3xl">
+                <SectionHeader eyebrow="Câu chuyện" title="Câu chuyện bộ ảnh" />
+                <div className="cms-rich-text mt-8 whitespace-pre-line text-lg">
+                  {album.content}
+                </div>
+              </div>
+            </div>
           </section>
         ) : null}
+
+        <section className="public-section">
+          <div className="site-container">
+            <div className="border-t border-[var(--color-border)] pt-10">
+              <SectionHeader
+                title="Muốn thực hiện một bộ ảnh tương tự?"
+                description="Gửi thông tin buổi chụp, Studio sẽ tư vấn gói và thời gian phù hợp."
+              />
+              <div className="mt-8">
+                <PublicButtonLink href="/dat-lich">Đặt lịch chụp</PublicButtonLink>
+              </div>
+            </div>
+          </div>
+        </section>
       </article>
     </main>
   );
@@ -185,12 +201,6 @@ function createImageGalleryJsonLd(album: PublicAlbumDetail) {
     url: getCanonicalPath(`/album/${album.slug}`),
     image: images,
   };
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "medium",
-  }).format(new Date(value));
 }
 
 function getCanonicalPath(path: string): string | undefined {

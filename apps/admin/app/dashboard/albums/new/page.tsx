@@ -8,6 +8,7 @@ import {
   type AlbumCategory,
   getAlbumCategories,
 } from "@/lib/api/album-categories";
+import { getAdminErrorMessage, loadErrorMessage } from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 export default function NewAlbumPage() {
@@ -36,7 +37,7 @@ export default function NewAlbumPage() {
             setCategories(response.data);
           }
         } catch (caughtError) {
-          setError(getErrorMessage(caughtError, "Unable to load categories."));
+          setError(getAdminErrorMessage(caughtError, loadErrorMessage));
         } finally {
           setIsLoading(false);
         }
@@ -57,10 +58,10 @@ export default function NewAlbumPage() {
           href="/dashboard/albums"
           className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
         >
-          Albums
+          Album ảnh
         </Link>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          New Album
+          Thêm album
         </h1>
       </header>
 
@@ -71,19 +72,19 @@ export default function NewAlbumPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading form...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       {!isLoading && categories.length === 0 ? (
         <div className="mt-8 rounded-lg border border-zinc-200 bg-white p-6">
           <p className="text-sm text-zinc-600">
-            Create an album category before adding albums.
+            Vui lòng tạo danh mục trước khi thêm album.
           </p>
           <Link
             href="/dashboard/album-categories"
             className="mt-4 inline-flex rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
           >
-            Go to Categories
+            Quản lý danh mục
           </Link>
         </div>
       ) : null}
@@ -95,8 +96,4 @@ export default function NewAlbumPage() {
       ) : null}
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

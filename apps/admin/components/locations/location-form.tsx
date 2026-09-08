@@ -14,6 +14,11 @@ import {
   updateLocation,
 } from "@/lib/api/locations";
 import { getMediaAssetUrl } from "@/lib/api/media";
+import {
+  emptyLabel,
+  getAdminErrorMessage,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 interface LocationFormProps {
@@ -109,7 +114,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
           () => updateLocation(initialLocation.id, payload),
           () => router.replace("/login"),
         );
-        setNotice("Location saved.");
+        setNotice("Đã cập nhật cơ sở.");
         router.refresh();
       } else {
         const response = await withAuthRefresh(
@@ -122,7 +127,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
         }
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save location."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSubmitting(false);
     }
@@ -134,17 +139,17 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
     const parsedSortOrder = sortOrder.trim() ? Number(sortOrder) : 0;
 
     if (name.trim().length === 0) {
-      setError("Name is required.");
+      setError("Vui lòng nhập tên cơ sở.");
       return null;
     }
 
     if (address.trim().length === 0) {
-      setError("Address is required.");
+      setError("Vui lòng nhập địa chỉ.");
       return null;
     }
 
     if (phone.trim().length === 0) {
-      setError("Phone is required.");
+      setError("Vui lòng nhập số điện thoại.");
       return null;
     }
 
@@ -154,7 +159,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
         parsedLatitude < -90 ||
         parsedLatitude > 90)
     ) {
-      setError("Latitude must be between -90 and 90.");
+      setError("Vĩ độ phải nằm trong khoảng -90 đến 90.");
       return null;
     }
 
@@ -164,18 +169,20 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
         parsedLongitude < -180 ||
         parsedLongitude > 180)
     ) {
-      setError("Longitude must be between -180 and 180.");
+      setError("Kinh độ phải nằm trong khoảng -180 đến 180.");
       return null;
     }
 
     if (!Number.isInteger(parsedSortOrder)) {
-      setError("Sort order must be an integer.");
+      setError("Thứ tự phải là số nguyên.");
       return null;
     }
 
     for (const item of openingHours) {
       if (!item.isClosed && (!item.openTime || !item.closeTime)) {
-        setError(`${weekdayLabels[item.day]} needs open and close time.`);
+        setError(
+          `${weekdayLabels[item.day]} cần có giờ mở cửa và giờ đóng cửa.`,
+        );
         return null;
       }
     }
@@ -267,23 +274,24 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
       ) : null}
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Basic</h2>
+        <h2 className="text-lg font-semibold">Thông tin cơ bản</h2>
         <div className="space-y-5">
           <TextField
-            label="Name"
+            label="Tên"
             value={name}
             onChange={setName}
             maxLength={160}
             required
           />
           <TextField
-            label="Slug"
+            label="Đường dẫn"
             value={slug}
             onChange={setSlug}
-            placeholder="Leave empty to generate from name"
+            placeholder="Để trống để hệ thống tự tạo từ tên"
+            helper="Đường dẫn dùng trên website, ví dụ: studio-quan-1."
           />
           <label className="block text-sm font-medium text-zinc-700">
-            Description
+            Mô tả
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
@@ -296,17 +304,17 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Contact</h2>
+        <h2 className="text-lg font-semibold">Thông tin liên hệ</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField
-            label="Address"
+            label="Địa chỉ"
             value={address}
             onChange={setAddress}
             maxLength={500}
             required
           />
           <TextField
-            label="Phone"
+            label="Số điện thoại"
             value={phone}
             onChange={setPhone}
             maxLength={50}
@@ -319,7 +327,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
             onChange={setEmail}
           />
           <TextField
-            label="Map URL"
+            label="Đường dẫn bản đồ"
             type="url"
             value={mapUrl}
             onChange={setMapUrl}
@@ -329,10 +337,10 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Coordinates</h2>
+        <h2 className="text-lg font-semibold">Tọa độ</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <TextField
-            label="Latitude"
+            label="Vĩ độ"
             type="number"
             value={latitude}
             onChange={setLatitude}
@@ -341,7 +349,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
             step="any"
           />
           <TextField
-            label="Longitude"
+            label="Kinh độ"
             type="number"
             value={longitude}
             onChange={setLongitude}
@@ -353,11 +361,11 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Media</h2>
+        <h2 className="text-lg font-semibold">Hình ảnh</h2>
         <div className="space-y-6">
-          <MediaBlock title="Cover" items={cover} onClear={setCover} />
+          <MediaBlock title="Ảnh bìa" items={cover} onClear={setCover} />
           <MediaPicker
-            title="Choose cover"
+            title="Chọn ảnh bìa"
             mode="single"
             selected={cover}
             onChange={setCover}
@@ -365,19 +373,21 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
 
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold text-zinc-700">Gallery</h3>
+              <h3 className="text-sm font-semibold text-zinc-700">
+                Bộ sưu tập ảnh
+              </h3>
               <MediaPicker
-                title="Choose gallery"
+                title="Chọn ảnh"
                 mode="multiple"
                 selected={gallery}
                 onChange={setGallery}
                 maxSelection={30}
-                maxSelectionMessage="Gallery can contain up to 30 images."
+                maxSelectionMessage="Bộ sưu tập có thể có tối đa 30 ảnh."
               />
             </div>
             {gallery.length === 0 ? (
               <p className="rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-                No gallery images selected.
+                Chưa chọn ảnh nào.
               </p>
             ) : (
               <div className="space-y-3">
@@ -396,7 +406,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
                       disabled={index === 0}
                       className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                     >
-                      Move Left
+                      Sang trái
                     </button>
                     <button
                       type="button"
@@ -404,7 +414,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
                       disabled={index === gallery.length - 1}
                       className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                     >
-                      Move Right
+                      Sang phải
                     </button>
                     <button
                       type="button"
@@ -415,7 +425,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
                       }
                       className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
                     >
-                      Remove
+                      Gỡ bỏ
                     </button>
                   </div>
                 ))}
@@ -426,7 +436,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Opening Hours</h2>
+        <h2 className="text-lg font-semibold">Giờ làm việc</h2>
         <div className="space-y-3">
           {openingHours.map((item) => (
             <div
@@ -477,7 +487,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Publishing</h2>
+        <h2 className="text-lg font-semibold">Hiển thị</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="flex items-center gap-3 text-sm font-medium text-zinc-700">
             <input
@@ -486,7 +496,7 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
               onChange={(event) => setIsActive(event.target.checked)}
               className="h-4 w-4 rounded border-zinc-300 text-emerald-600"
             />
-            Active
+            Hiển thị
           </label>
           <label className="flex items-center gap-3 text-sm font-medium text-zinc-700">
             <input
@@ -495,10 +505,10 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
               onChange={(event) => setIsFeatured(event.target.checked)}
               className="h-4 w-4 rounded border-zinc-300 text-emerald-600"
             />
-            Featured
+            Nổi bật
           </label>
           <TextField
-            label="Sort Order"
+            label="Thứ tự"
             type="number"
             value={sortOrder}
             onChange={setSortOrder}
@@ -510,13 +520,13 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
         <h2 className="text-lg font-semibold">SEO</h2>
         <div className="space-y-5">
           <TextField
-            label="SEO Title"
+            label="Tiêu đề SEO"
             value={seoTitle}
             onChange={setSeoTitle}
             maxLength={70}
           />
           <label className="block text-sm font-medium text-zinc-700">
-            SEO Description
+            Mô tả SEO
             <textarea
               value={seoDescription}
               onChange={(event) => setSeoDescription(event.target.value)}
@@ -525,9 +535,13 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
               className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
           </label>
-          <MediaBlock title="OG Image" items={seoImage} onClear={setSeoImage} />
+          <MediaBlock
+            title="Ảnh chia sẻ"
+            items={seoImage}
+            onClear={setSeoImage}
+          />
           <MediaPicker
-            title="Choose OG image"
+            title="Chọn ảnh chia sẻ"
             mode="single"
             selected={seoImage}
             onChange={setSeoImage}
@@ -540,14 +554,14 @@ export function LocationForm({ initialLocation }: LocationFormProps) {
           href="/dashboard/locations"
           className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
         >
-          Cancel
+          Hủy
         </Link>
         <button
           type="submit"
           disabled={isSubmitting}
           className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
-          {isSubmitting ? "Saving..." : "Save Location"}
+          {isSubmitting ? "Đang lưu..." : "Lưu cơ sở"}
         </button>
       </div>
     </form>
@@ -577,12 +591,12 @@ function MediaBlock({
             onClick={() => onClear([])}
             className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
           >
-            Remove
+            Gỡ bỏ
           </button>
         </div>
       ) : (
         <p className="rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-          No image selected.
+          {emptyLabel}
         </p>
       )}
     </div>
@@ -614,6 +628,7 @@ function TextField({
   step,
   maxLength,
   placeholder,
+  helper,
 }: {
   label: string;
   value: string;
@@ -625,6 +640,7 @@ function TextField({
   step?: string;
   maxLength?: number;
   placeholder?: string;
+  helper?: string;
 }) {
   return (
     <label className="block text-sm font-medium text-zinc-700">
@@ -641,6 +657,11 @@ function TextField({
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
       />
+      {helper ? (
+        <span className="mt-2 block text-xs font-normal text-zinc-500">
+          {helper}
+        </span>
+      ) : null}
     </label>
   );
 }
@@ -661,8 +682,4 @@ function normalizeOpeningHours(
         closeTime: "18:00",
       },
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

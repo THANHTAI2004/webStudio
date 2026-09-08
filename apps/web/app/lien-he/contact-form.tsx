@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import {
   ContactApiError,
@@ -29,7 +30,7 @@ export function ContactForm({ locations }: ContactFormProps) {
     setConfirmation(null);
 
     if (message.trim().length < 5) {
-      setError("N\u1ed9i dung c\u1ea7n t\u1ed1i thi\u1ec3u 5 k\u00fd t\u1ef1.");
+      setError("Nội dung cần tối thiểu 5 ký tự.");
       return;
     }
 
@@ -61,38 +62,54 @@ export function ContactForm({ locations }: ContactFormProps) {
 
   if (confirmation) {
     return (
-      <section className="rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
-        <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-          {"G\u1eedi li\u00ean h\u1ec7 th\u00e0nh c\u00f4ng"}
-        </p>
-        <h2 className="mt-2 text-2xl font-semibold">{confirmation.code}</h2>
-        <p className="mt-6 rounded-md bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800">
-          {
-            "Studio s\u1ebd ph\u1ea3n h\u1ed3i b\u1ea1n s\u1edbm nh\u1ea5t c\u00f3 th\u1ec3."
-          }
-        </p>
-        <button
-          type="button"
-          onClick={() => setConfirmation(null)}
-          className="mt-6 rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-zinc-50"
+      <section className="public-form-card" aria-live="polite">
+        <p className="section-eyebrow">Đã gửi liên hệ</p>
+        <h2
+          className="mt-3 text-3xl font-semibold leading-tight"
+          style={{ fontFamily: "var(--font-heading)" }}
         >
-          {"G\u1eedi li\u00ean h\u1ec7 kh\u00e1c"}
-        </button>
+          Studio đã nhận được thông tin
+        </h2>
+        <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+          Mã liên hệ của bạn là{" "}
+          <span className="font-extrabold text-[var(--color-text)]">
+            {confirmation.code}
+          </span>
+          . Studio sẽ phản hồi bạn sớm nhất có thể.
+        </p>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setConfirmation(null)}
+            className="theme-button-secondary"
+          >
+            Gửi liên hệ khác
+          </button>
+          <Link href="/goi-chup" className="theme-button-primary">
+            Xem gói chụp
+          </Link>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+    <section className="public-form-card">
+      <p className="section-eyebrow">Biểu mẫu liên hệ</p>
+      <h2
+        className="mt-3 text-3xl font-semibold leading-tight"
+        style={{ fontFamily: "var(--font-heading)" }}
+      >
+        Gửi yêu cầu tư vấn
+      </h2>
+
       {error ? (
-        <p className="mb-5 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
+        <p className="form-message form-message--error mt-5">{error}</p>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="mt-7 space-y-5">
         <TextField
-          label="H\u1ecd t\u00ean"
+          label="Họ tên"
           value={customerName}
           onChange={setCustomerName}
           minLength={2}
@@ -100,7 +117,7 @@ export function ContactForm({ locations }: ContactFormProps) {
           required
         />
         <TextField
-          label="S\u1ed1 \u0111i\u1ec7n tho\u1ea1i"
+          label="Số điện thoại"
           value={phone}
           onChange={setPhone}
           maxLength={50}
@@ -111,15 +128,16 @@ export function ContactForm({ locations }: ContactFormProps) {
           type="email"
           value={email}
           onChange={setEmail}
+          helper="Không bắt buộc, nhưng hữu ích nếu bạn muốn nhận tư vấn qua email."
         />
-        <label className="block text-sm font-medium text-zinc-700">
-          {"C\u01a1 s\u1edf quan t\u00e2m"}
+        <label className="form-label">
+          Cơ sở quan tâm
           <select
             value={locationId}
             onChange={(event) => setLocationId(event.target.value)}
-            className="mt-2 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            className="form-select"
           >
-            <option value="">{"Ch\u01b0a ch\u1ecdn c\u01a1 s\u1edf"}</option>
+            <option value="">Chưa chọn cơ sở</option>
             {locations.map((location) => (
               <option key={location.id} value={location.id}>
                 {location.name}
@@ -128,14 +146,14 @@ export function ContactForm({ locations }: ContactFormProps) {
           </select>
         </label>
         <TextField
-          label="Ch\u1ee7 \u0111\u1ec1"
+          label="Chủ đề"
           value={subject}
           onChange={setSubject}
           maxLength={200}
           required
         />
-        <label className="block text-sm font-medium text-zinc-700">
-          {"N\u1ed9i dung"}
+        <label className="form-label">
+          Nội dung <RequiredMark />
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -143,17 +161,18 @@ export function ContactForm({ locations }: ContactFormProps) {
             maxLength={5000}
             rows={7}
             required
-            className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+            className="form-textarea"
           />
+          <span className="form-helper">
+            Hãy mô tả nhu cầu chụp, thời gian dự kiến hoặc phong cách bạn thích.
+          </span>
         </label>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-md bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
+          className="theme-button-primary w-full disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting
-            ? "\u0110ang g\u1eedi..."
-            : "G\u1eedi li\u00ean h\u1ec7"}
+          {isSubmitting ? "Đang gửi..." : "Gửi liên hệ"}
         </button>
       </form>
     </section>
@@ -166,6 +185,7 @@ function TextField({
   onChange,
   type = "text",
   required = false,
+  helper,
   minLength,
   maxLength,
 }: {
@@ -174,12 +194,13 @@ function TextField({
   onChange: (value: string) => void;
   type?: string;
   required?: boolean;
+  helper?: string;
   minLength?: number;
   maxLength?: number;
 }) {
   return (
-    <label className="block text-sm font-medium text-zinc-700">
-      {label}
+    <label className="form-label">
+      {label} {required ? <RequiredMark /> : null}
       <input
         type={type}
         value={value}
@@ -187,27 +208,36 @@ function TextField({
         minLength={minLength}
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
+        className="form-input"
       />
+      {helper ? <span className="form-helper">{helper}</span> : null}
     </label>
+  );
+}
+
+function RequiredMark() {
+  return (
+    <span aria-label="bắt buộc" className="text-red-700">
+      *
+    </span>
   );
 }
 
 function getFriendlyErrorMessage(error: unknown): string {
   if (!(error instanceof ContactApiError)) {
-    return "Kh\u00f4ng th\u1ec3 g\u1eedi li\u00ean h\u1ec7 l\u00fac n\u00e0y. Vui l\u00f2ng th\u1eed l\u1ea1i.";
+    return "Không thể gửi liên hệ lúc này. Vui lòng thử lại.";
   }
 
   switch (error.code) {
     case "CONTACT_RATE_LIMITED":
-      return "B\u1ea1n \u0111ang g\u1eedi qu\u00e1 nhi\u1ec1u y\u00eau c\u1ea7u. Vui l\u00f2ng th\u1eed l\u1ea1i sau.";
+      return "Bạn đang gửi quá nhiều yêu cầu. Vui lòng thử lại sau.";
     case "INVALID_CONTACT_PHONE":
-      return "S\u1ed1 \u0111i\u1ec7n tho\u1ea1i kh\u00f4ng h\u1ee3p l\u1ec7.";
+      return "Số điện thoại không hợp lệ.";
     case "INVALID_CONTACT_LOCATION":
-      return "C\u01a1 s\u1edf b\u1ea1n ch\u1ecdn kh\u00f4ng c\u00f2n kh\u1ea3 d\u1ee5ng.";
+      return "Cơ sở bạn chọn không còn khả dụng.";
     default:
       return error.status >= 500 || error.status === 0
-        ? "Kh\u00f4ng th\u1ec3 g\u1eedi li\u00ean h\u1ec7 l\u00fac n\u00e0y. Vui l\u00f2ng th\u1eed l\u1ea1i."
-        : "Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i th\u00f4ng tin li\u00ean h\u1ec7.";
+        ? "Không thể gửi liên hệ lúc này. Vui lòng thử lại."
+        : "Vui lòng kiểm tra lại thông tin liên hệ.";
   }
 }

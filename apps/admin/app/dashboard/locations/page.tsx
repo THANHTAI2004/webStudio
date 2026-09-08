@@ -10,7 +10,15 @@ import {
   deleteLocation,
   getLocations,
 } from "@/lib/api/locations";
+import {
+  deleteErrorMessage,
+  emptyLabel,
+  getAdminErrorMessage,
+  loadErrorMessage,
+  yesNoLabel,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const PAGE_SIZE = 20;
 
@@ -24,6 +32,8 @@ export default function LocationsPage() {
   const [featured, setFeatured] = useState<boolean | "">("");
   const [sort, setSort] = useState("sortOrder:asc");
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<AdminLocation | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const redirectToLogin = useCallback(() => {
@@ -55,7 +65,7 @@ export default function LocationsPage() {
       setLocations(response.data);
       setTotalPages(response.pagination.totalPages);
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load locations."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -71,23 +81,25 @@ export default function LocationsPage() {
     };
   }, [loadData]);
 
-  async function handleDelete(location: AdminLocation) {
-    const confirmed = window.confirm(`Delete location "${location.name}"?`);
-
-    if (!confirmed) {
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) {
       return;
     }
 
+    setIsDeleting(true);
     setError(null);
 
     try {
       await withAuthRefresh(
-        () => deleteLocation(location.id),
+        () => deleteLocation(deleteTarget.id),
         redirectToLogin,
       );
+      setDeleteTarget(null);
       await loadData();
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to delete location."));
+      setError(getAdminErrorMessage(caughtError, deleteErrorMessage));
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -96,21 +108,21 @@ export default function LocationsPage() {
       <header className="flex flex-col gap-5 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Locations
+            Cơ sở
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            Location Management
+            Cơ sở
           </h1>
         </div>
         <Link
           href="/dashboard/locations/new"
           className="rounded-md bg-zinc-950 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-zinc-800"
         >
-          New Location
+          Thêm cơ sở
         </Link>
       </header>
 
-      <div className="mt-6 grid gap-3 md:grid-cols-[1fr_160px_160px_190px]">
+      <div className="mt-6 grid gap-3 md:grid-cols-[1fr_170px_170px_190px]">
         <input
           type="search"
           value={search}
@@ -118,7 +130,7 @@ export default function LocationsPage() {
             setPage(1);
             setSearch(event.target.value);
           }}
-          placeholder="Search name, address, phone"
+          placeholder="Tìm tên, địa chỉ, số điện thoại"
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         />
         <select
@@ -129,9 +141,9 @@ export default function LocationsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="">All active</option>
-          <option value="true">Active</option>
-          <option value="false">Inactive</option>
+          <option value="">Tất cả hiển thị</option>
+          <option value="true">Đang hiển thị</option>
+          <option value="false">Đã ẩn</option>
         </select>
         <select
           value={String(featured)}
@@ -141,9 +153,9 @@ export default function LocationsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="">All featured</option>
-          <option value="true">Featured</option>
-          <option value="false">Not featured</option>
+          <option value="">Tất cả nổi bật</option>
+          <option value="true">Nổi bật</option>
+          <option value="false">Không nổi bật</option>
         </select>
         <select
           value={sort}
@@ -153,9 +165,9 @@ export default function LocationsPage() {
           }}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
         >
-          <option value="sortOrder:asc">Sort order</option>
-          <option value="createdAt:desc">Newest</option>
-          <option value="name:asc">Name A-Z</option>
+          <option value="sortOrder:asc">Thứ tự hiển thị</option>
+          <option value="createdAt:desc">Mới nhất</option>
+          <option value="name:asc">Tên A-Z</option>
         </select>
       </div>
 
@@ -166,28 +178,28 @@ export default function LocationsPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading locations...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       <div className="mt-8 overflow-x-auto rounded-lg border border-zinc-200 bg-white shadow-sm">
         <table className="w-full min-w-[980px] text-left text-sm">
           <thead className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase tracking-normal text-zinc-500">
             <tr>
-              <th className="px-4 py-3 font-semibold">Cover</th>
-              <th className="px-4 py-3 font-semibold">Name</th>
-              <th className="px-4 py-3 font-semibold">Address</th>
-              <th className="px-4 py-3 font-semibold">Phone</th>
-              <th className="px-4 py-3 font-semibold">Active</th>
-              <th className="px-4 py-3 font-semibold">Featured</th>
-              <th className="px-4 py-3 font-semibold">Sort</th>
-              <th className="px-4 py-3 font-semibold">Actions</th>
+              <th className="px-4 py-3 font-semibold">Ảnh bìa</th>
+              <th className="px-4 py-3 font-semibold">Tên</th>
+              <th className="px-4 py-3 font-semibold">Địa chỉ</th>
+              <th className="px-4 py-3 font-semibold">Số điện thoại</th>
+              <th className="px-4 py-3 font-semibold">Hiển thị</th>
+              <th className="px-4 py-3 font-semibold">Nổi bật</th>
+              <th className="px-4 py-3 font-semibold">Thứ tự</th>
+              <th className="px-4 py-3 font-semibold">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200">
             {!isLoading && locations.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-center text-zinc-500">
-                  No locations found.
+                  Không tìm thấy kết quả.
                 </td>
               </tr>
             ) : null}
@@ -207,7 +219,7 @@ export default function LocationsPage() {
                     </div>
                   ) : (
                     <div className="flex h-16 w-20 items-center justify-center rounded-md bg-zinc-100 text-xs text-zinc-500">
-                      Empty
+                      {emptyLabel}
                     </div>
                   )}
                 </td>
@@ -220,10 +232,10 @@ export default function LocationsPage() {
                 </td>
                 <td className="px-4 py-3 text-zinc-600">{location.phone}</td>
                 <td className="px-4 py-3 text-zinc-600">
-                  {location.isActive ? "Yes" : "No"}
+                  {yesNoLabel(location.isActive)}
                 </td>
                 <td className="px-4 py-3 text-zinc-600">
-                  {location.isFeatured ? "Yes" : "No"}
+                  {yesNoLabel(location.isFeatured)}
                 </td>
                 <td className="px-4 py-3 text-zinc-600">
                   {location.sortOrder}
@@ -234,14 +246,14 @@ export default function LocationsPage() {
                       href={`/dashboard/locations/${location.id}/edit`}
                       className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-semibold transition hover:bg-zinc-50"
                     >
-                      Edit
+                      Chỉnh sửa
                     </Link>
                     <button
                       type="button"
-                      onClick={() => void handleDelete(location)}
+                      onClick={() => setDeleteTarget(location)}
                       className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50"
                     >
-                      Delete
+                      Xóa
                     </button>
                   </div>
                 </td>
@@ -258,7 +270,7 @@ export default function LocationsPage() {
           onClick={() => setPage((value) => Math.max(1, value - 1))}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
         >
-          Previous
+          Trước
         </button>
         <span className="min-w-20 text-center text-sm text-zinc-600">
           {page} / {Math.max(totalPages, 1)}
@@ -269,9 +281,26 @@ export default function LocationsPage() {
           onClick={() => setPage((value) => value + 1)}
           className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
         >
-          Next
+          Sau
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        title="Xóa cơ sở?"
+        description={
+          <>
+            Bạn có chắc muốn xóa{" "}
+            <span className="font-semibold text-zinc-900">
+              {deleteTarget?.name}
+            </span>
+            ? Thao tác này không thể hoàn tác.
+          </>
+        }
+        isLoading={isDeleting}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => void handleDeleteConfirm()}
+      />
     </section>
   );
 }
@@ -286,8 +315,4 @@ function toOptionalBoolean(value: string): boolean | "" {
   }
 
   return "";
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

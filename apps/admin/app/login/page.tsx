@@ -2,8 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ApiError } from "@/lib/api/client";
 import { login } from "@/lib/api/auth";
+import { getAdminErrorMessage } from "@/lib/admin-labels";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,12 +21,12 @@ export default function LoginPage() {
       await login({ email, password });
       router.push("/dashboard");
     } catch (caughtError) {
-      const message =
-        caughtError instanceof ApiError
-          ? caughtError.message
-          : "Unable to log in right now.";
-
-      setError(message);
+      setError(
+        getAdminErrorMessage(
+          caughtError,
+          "Không thể đăng nhập lúc này. Vui lòng thử lại.",
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -37,11 +37,14 @@ export default function LoginPage() {
       <section className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-md flex-col justify-center">
         <div className="mb-8">
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            Studio Admin
+            Quản trị Studio
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-normal">
-            Sign in
+            Đăng nhập
           </h1>
+          <p className="mt-3 text-sm text-zinc-600">
+            Đăng nhập để quản lý website Studio.
+          </p>
         </div>
 
         <form
@@ -61,7 +64,7 @@ export default function LoginPage() {
           </label>
 
           <label className="mt-5 block text-sm font-medium text-zinc-700">
-            Password
+            Mật khẩu
             <input
               type="password"
               autoComplete="current-password"
@@ -84,7 +87,7 @@ export default function LoginPage() {
             disabled={isSubmitting}
             className="mt-6 w-full rounded-md bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
-            {isSubmitting ? "Signing in..." : "Login"}
+            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </form>
       </section>

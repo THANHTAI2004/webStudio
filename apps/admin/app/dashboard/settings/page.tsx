@@ -10,6 +10,11 @@ import {
   getSettings,
   updateSettings,
 } from "@/lib/api/settings";
+import {
+  getAdminErrorMessage,
+  loadErrorMessage,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 import { getPublicUrl } from "@/lib/site-url";
 
@@ -20,9 +25,9 @@ const navigationFields: Array<{
   { key: "showHome", label: "Trang ch\u1ee7" },
   { key: "showAbout", label: "Gi\u1edbi thi\u1ec7u" },
   { key: "showPackages", label: "G\u00f3i ch\u1ee5p" },
-  { key: "showAlbums", label: "Album" },
-  { key: "showNews", label: "Tin t\u1ee9c" },
-  { key: "showLocations", label: "\u0110\u1ecba \u0111i\u1ec3m" },
+  { key: "showAlbums", label: "Album ảnh" },
+  { key: "showNews", label: "Bài viết" },
+  { key: "showLocations", label: "Cơ sở" },
   { key: "showContact", label: "Li\u00ean h\u1ec7" },
   { key: "showBooking", label: "\u0110\u1eb7t l\u1ecbch" },
 ];
@@ -62,7 +67,7 @@ export default function SettingsPage() {
           : [],
       );
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load settings."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -122,9 +127,9 @@ export default function SettingsPage() {
           ? [response.data.defaultSeo.ogImage]
           : [],
       );
-      setNotice("Settings saved.");
+      setNotice("Đã lưu cài đặt.");
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save settings."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSaving(false);
     }
@@ -147,7 +152,7 @@ export default function SettingsPage() {
   if (isLoading || !settings) {
     return (
       <main className="mx-auto w-full max-w-5xl">
-        <p className="text-sm text-zinc-600">Loading settings...</p>
+        <p className="text-sm text-zinc-600">Đang tải cài đặt...</p>
       </main>
     );
   }
@@ -157,10 +162,10 @@ export default function SettingsPage() {
       <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            CMS
+            Hệ thống
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            Global Settings
+            Cài đặt
           </h1>
         </div>
         <Link
@@ -169,7 +174,7 @@ export default function SettingsPage() {
           rel="noopener noreferrer"
           className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold hover:bg-zinc-50"
         >
-          View site
+          Xem website
         </Link>
       </header>
 
@@ -185,16 +190,16 @@ export default function SettingsPage() {
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
-        <FormSection title="Brand">
+        <FormSection title="Thông tin thương hiệu">
           <TextField
-            label="Studio Name"
+            label="Tên Studio"
             value={settings.studioName}
             onChange={(studioName) => updateField("studioName", studioName)}
             maxLength={120}
             required
           />
           <TextArea
-            label="Tagline"
+            label="Câu giới thiệu"
             value={settings.tagline}
             onChange={(tagline) => updateField("tagline", tagline)}
             maxLength={250}
@@ -203,23 +208,23 @@ export default function SettingsPage() {
           <div className="grid gap-5 md:grid-cols-2">
             <SingleMediaField
               label="Logo"
-              pickerTitle="Choose logo"
+              pickerTitle="Chọn logo"
               value={logo}
               onChange={setLogo}
             />
             <SingleMediaField
-              label="Favicon"
-              pickerTitle="Choose favicon"
+              label="Biểu tượng website"
+              pickerTitle="Chọn biểu tượng website"
               value={favicon}
               onChange={setFavicon}
             />
           </div>
         </FormSection>
 
-        <FormSection title="Contact">
+        <FormSection title="Thông tin liên hệ">
           <div className="grid gap-5 md:grid-cols-2">
             <TextField
-              label="Phone"
+              label="Số điện thoại"
               value={settings.contact.phone}
               onChange={(phone) =>
                 updateField("contact", { ...settings.contact, phone })
@@ -236,7 +241,7 @@ export default function SettingsPage() {
             />
           </div>
           <TextArea
-            label="Address"
+            label="Địa chỉ"
             value={settings.contact.address}
             onChange={(address) =>
               updateField("contact", { ...settings.contact, address })
@@ -246,7 +251,7 @@ export default function SettingsPage() {
           />
         </FormSection>
 
-        <FormSection title="Socials">
+        <FormSection title="Mạng xã hội">
           <div className="grid gap-5 md:grid-cols-2">
             {(
               [
@@ -273,7 +278,7 @@ export default function SettingsPage() {
           </div>
         </FormSection>
 
-        <FormSection title="Navigation">
+        <FormSection title="Menu website">
           <div className="grid gap-3 md:grid-cols-2">
             {navigationFields.map((field) => (
               <label
@@ -297,9 +302,9 @@ export default function SettingsPage() {
           </div>
         </FormSection>
 
-        <FormSection title="Default SEO">
+        <FormSection title="SEO mặc định">
           <TextField
-            label="SEO Title"
+            label="Tiêu đề SEO"
             value={settings.defaultSeo.title}
             onChange={(title) =>
               updateField("defaultSeo", { ...settings.defaultSeo, title })
@@ -307,7 +312,7 @@ export default function SettingsPage() {
             maxLength={70}
           />
           <TextArea
-            label="SEO Description"
+            label="Mô tả SEO"
             value={settings.defaultSeo.description}
             onChange={(description) =>
               updateField("defaultSeo", {
@@ -319,16 +324,16 @@ export default function SettingsPage() {
             rows={3}
           />
           <SingleMediaField
-            label="Default OG Image"
-            pickerTitle="Choose OG image"
+            label="Ảnh chia sẻ"
+            pickerTitle="Chọn ảnh chia sẻ"
             value={ogImage}
             onChange={setOgImage}
           />
         </FormSection>
 
-        <FormSection title="Footer">
+        <FormSection title="Chân trang">
           <TextArea
-            label="Description"
+            label="Mô tả"
             value={settings.footer.description}
             onChange={(description) =>
               updateField("footer", { ...settings.footer, description })
@@ -337,7 +342,7 @@ export default function SettingsPage() {
             rows={4}
           />
           <TextField
-            label="Copyright Text"
+            label="Bản quyền"
             value={settings.footer.copyrightText}
             onChange={(copyrightText) =>
               updateField("footer", { ...settings.footer, copyrightText })
@@ -352,7 +357,7 @@ export default function SettingsPage() {
             disabled={isSaving}
             className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
-            {isSaving ? "Saving..." : "Save Settings"}
+            {isSaving ? "Đang lưu..." : "Lưu cài đặt"}
           </button>
         </div>
       </form>
@@ -430,8 +435,4 @@ function TextArea({
       />
     </label>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

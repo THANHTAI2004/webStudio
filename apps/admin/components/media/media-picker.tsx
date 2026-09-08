@@ -4,6 +4,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { getMedia, getMediaAssetUrl, type MediaItem } from "@/lib/api/media";
+import {
+  getAdminErrorMessage,
+  loadErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 export interface MediaChoice {
@@ -34,7 +38,7 @@ export function MediaPicker({
   onChange,
   disabled = false,
   maxSelection,
-  maxSelectionMessage = "Selection limit reached.",
+  maxSelectionMessage = "Đã đạt giới hạn chọn ảnh.",
 }: MediaPickerProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -73,7 +77,7 @@ export function MediaPicker({
         setItems(response.data);
         setTotalPages(response.pagination.totalPages);
       } catch (caughtError) {
-        setError(getErrorMessage(caughtError, "Unable to load media."));
+        setError(getAdminErrorMessage(caughtError, loadErrorMessage));
       } finally {
         setIsLoading(false);
       }
@@ -154,11 +158,11 @@ export function MediaPicker({
           <div className="flex max-h-[90vh] w-full max-w-5xl flex-col rounded-lg bg-white text-zinc-950 shadow-xl">
             <header className="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold">Media Library</h2>
+                <h2 className="text-lg font-semibold">Thư viện ảnh</h2>
                 <p className="mt-1 text-sm text-zinc-500">
                   {mode === "multiple"
-                    ? `${draftSelection.length} selected`
-                    : "Choose one image"}
+                    ? `Đã chọn ${draftSelection.length} ảnh`
+                    : "Chọn một ảnh"}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -168,7 +172,7 @@ export function MediaPicker({
                     onClick={applyMultipleSelection}
                     className="rounded-md bg-zinc-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800"
                   >
-                    Done
+                    Xong
                   </button>
                 ) : null}
                 <button
@@ -176,7 +180,7 @@ export function MediaPicker({
                   onClick={closePicker}
                   className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-semibold transition hover:bg-zinc-50"
                 >
-                  Close
+                  Đóng
                 </button>
               </div>
             </header>
@@ -189,7 +193,7 @@ export function MediaPicker({
                   setPage(1);
                   setSearch(event.target.value);
                 }}
-                placeholder="Search media"
+                placeholder="Tìm ảnh"
                 className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 sm:max-w-sm"
               />
             </div>
@@ -202,12 +206,12 @@ export function MediaPicker({
               ) : null}
 
               {isLoading ? (
-                <p className="text-sm text-zinc-600">Loading media...</p>
+                <p className="text-sm text-zinc-600">Đang tải...</p>
               ) : null}
 
               {!isLoading && items.length === 0 ? (
                 <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-6 text-center text-sm text-zinc-600">
-                  No images found.
+                  Không tìm thấy kết quả.
                 </p>
               ) : null}
 
@@ -240,7 +244,7 @@ export function MediaPicker({
                           {item.originalName}
                         </span>
                         <span className="mt-1 block text-xs text-zinc-500">
-                          {isSelected ? "Selected" : "Select"}
+                          {isSelected ? "Đã chọn" : "Chọn ảnh"}
                         </span>
                       </span>
                     </button>
@@ -256,7 +260,7 @@ export function MediaPicker({
                 onClick={() => setPage((value) => Math.max(1, value - 1))}
                 className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
               >
-                Previous
+                Trước
               </button>
               <span className="text-sm text-zinc-600">
                 {page} / {Math.max(totalPages, 1)}
@@ -267,7 +271,7 @@ export function MediaPicker({
                 onClick={() => setPage((value) => value + 1)}
                 className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
               >
-                Next
+                Sau
               </button>
             </footer>
           </div>
@@ -286,8 +290,4 @@ function toMediaChoice(mediaItem: MediaItem): MediaChoice {
     alt: mediaItem.alt,
     originalName: mediaItem.originalName,
   };
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

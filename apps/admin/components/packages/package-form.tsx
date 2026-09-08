@@ -14,6 +14,12 @@ import {
 import type { PackageCategory } from "@/lib/api/package-categories";
 import { getMediaAssetUrl } from "@/lib/api/media";
 import { MediaPicker, type MediaChoice } from "@/components/media/media-picker";
+import {
+  emptyLabel,
+  getAdminErrorMessage,
+  publishStatusLabels,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 interface PackageFormProps {
@@ -87,7 +93,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
     setNotice(null);
 
     if (!categoryId) {
-      setError("Please create and choose a category first.");
+      setError("Vui lòng tạo và chọn danh mục trước.");
       return;
     }
 
@@ -105,7 +111,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           () => updatePackage(initialPackage.id, payload),
           () => router.replace("/login"),
         );
-        setNotice("Package saved.");
+        setNotice("Đã cập nhật gói chụp.");
         router.refresh();
       } else {
         const response = await withAuthRefresh(
@@ -118,7 +124,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
         }
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save package."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +139,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
     const parsedSortOrder = sortOrder.trim() ? Number(sortOrder) : 0;
 
     if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
-      setError("Price must be zero or greater.");
+      setError("Giá phải từ 0 trở lên.");
       return null;
     }
 
@@ -141,7 +147,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
       parsedSalePrice !== null &&
       (!Number.isFinite(parsedSalePrice) || parsedSalePrice < 0)
     ) {
-      setError("Sale price must be zero or greater.");
+      setError("Giá khuyến mãi phải từ 0 trở lên.");
       return null;
     }
 
@@ -149,12 +155,12 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
       parsedDuration !== null &&
       (!Number.isFinite(parsedDuration) || parsedDuration < 1)
     ) {
-      setError("Duration must be at least 1 minute.");
+      setError("Thời lượng phải ít nhất 1 phút.");
       return null;
     }
 
     if (!Number.isInteger(parsedSortOrder)) {
-      setError("Sort order must be an integer.");
+      setError("Thứ tự phải là số nguyên.");
       return null;
     }
 
@@ -220,10 +226,10 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
       ) : null}
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Basic</h2>
+        <h2 className="text-lg font-semibold">Thông tin cơ bản</h2>
         <div className="space-y-5">
           <label className="block text-sm font-medium text-zinc-700">
-            Name
+            Tên
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -234,17 +240,20 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Slug
+            Đường dẫn
             <input
               value={slug}
               onChange={(event) => setSlug(event.target.value)}
-              placeholder="Leave empty to generate from name"
+              placeholder="Để trống để hệ thống tự tạo từ tên"
               className="mt-2 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100"
             />
+            <span className="mt-2 block text-xs font-normal text-zinc-500">
+              Đường dẫn dùng trên website, ví dụ: goi-chup-anh-cuoi.
+            </span>
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Category
+            Danh mục
             <select
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
@@ -262,10 +271,10 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Price</h2>
+        <h2 className="text-lg font-semibold">Giá</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block text-sm font-medium text-zinc-700">
-            Price
+            Giá
             <input
               type="number"
               min="0"
@@ -277,7 +286,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Sale Price
+            Giá khuyến mãi
             <input
               type="number"
               min="0"
@@ -288,7 +297,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Duration Minutes
+            Thời lượng (phút)
             <input
               type="number"
               min="1"
@@ -307,15 +316,15 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Media</h2>
+        <h2 className="text-lg font-semibold">Hình ảnh</h2>
         <div className="space-y-6">
           <MediaBlock
-            title="Thumbnail"
+            title="Ảnh đại diện"
             items={thumbnail}
             onClear={setThumbnail}
           />
           <MediaPicker
-            title="Choose thumbnail"
+            title="Chọn ảnh đại diện"
             mode="single"
             selected={thumbnail}
             onChange={setThumbnail}
@@ -323,9 +332,11 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
 
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold text-zinc-700">Gallery</h3>
+              <h3 className="text-sm font-semibold text-zinc-700">
+                Bộ sưu tập ảnh
+              </h3>
               <MediaPicker
-                title="Choose gallery"
+                title="Chọn ảnh"
                 mode="multiple"
                 selected={gallery}
                 onChange={setGallery}
@@ -333,7 +344,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
             </div>
             {gallery.length === 0 ? (
               <p className="rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-                No gallery images selected.
+                Chưa chọn ảnh nào.
               </p>
             ) : (
               <div className="space-y-3">
@@ -354,7 +365,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
                       disabled={index === 0}
                       className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                     >
-                      Move Up
+                      Di chuyển lên
                     </button>
                     <button
                       type="button"
@@ -362,7 +373,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
                       disabled={index === gallery.length - 1}
                       className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
                     >
-                      Move Down
+                      Di chuyển xuống
                     </button>
                     <button
                       type="button"
@@ -373,7 +384,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
                       }
                       className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
                     >
-                      Remove
+                      Gỡ bỏ
                     </button>
                   </div>
                 ))}
@@ -384,10 +395,10 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Content</h2>
+        <h2 className="text-lg font-semibold">Nội dung</h2>
         <div className="space-y-5">
           <label className="block text-sm font-medium text-zinc-700">
-            Features
+            Nội dung gói
             <textarea
               value={featuresText}
               onChange={(event) => setFeaturesText(event.target.value)}
@@ -397,7 +408,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Description
+            Mô tả
             <textarea
               value={description}
               onChange={(event) => setDescription(event.target.value)}
@@ -407,7 +418,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Content
+            Nội dung
             <textarea
               value={content}
               onChange={(event) => setContent(event.target.value)}
@@ -419,10 +430,10 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
       </section>
 
       <section className="grid gap-5 border-b border-zinc-200 pb-8 lg:grid-cols-2">
-        <h2 className="text-lg font-semibold">Publish</h2>
+        <h2 className="text-lg font-semibold">Hiển thị</h2>
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block text-sm font-medium text-zinc-700">
-            Status
+            Trạng thái
             <select
               value={status}
               onChange={(event) =>
@@ -432,14 +443,14 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
             >
               {statuses.map((item) => (
                 <option key={item} value={item}>
-                  {item}
+                  {publishStatusLabels[item]}
                 </option>
               ))}
             </select>
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            Sort Order
+            Thứ tự
             <input
               type="number"
               value={sortOrder}
@@ -455,7 +466,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
               onChange={(event) => setIsFeatured(event.target.checked)}
               className="h-4 w-4 rounded border-zinc-300 text-emerald-600"
             />
-            Featured
+            Nổi bật
           </label>
         </div>
       </section>
@@ -464,7 +475,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
         <h2 className="text-lg font-semibold">SEO</h2>
         <div className="space-y-5">
           <label className="block text-sm font-medium text-zinc-700">
-            SEO Title
+            Tiêu đề SEO
             <input
               value={seoTitle}
               onChange={(event) => setSeoTitle(event.target.value)}
@@ -474,7 +485,7 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           </label>
 
           <label className="block text-sm font-medium text-zinc-700">
-            SEO Description
+            Mô tả SEO
             <textarea
               value={seoDescription}
               onChange={(event) => setSeoDescription(event.target.value)}
@@ -484,9 +495,13 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
             />
           </label>
 
-          <MediaBlock title="OG Image" items={seoImage} onClear={setSeoImage} />
+          <MediaBlock
+            title="Ảnh chia sẻ"
+            items={seoImage}
+            onClear={setSeoImage}
+          />
           <MediaPicker
-            title="Choose OG image"
+            title="Chọn ảnh chia sẻ"
             mode="single"
             selected={seoImage}
             onChange={setSeoImage}
@@ -499,14 +514,14 @@ export function PackageForm({ categories, initialPackage }: PackageFormProps) {
           href="/dashboard/packages"
           className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
         >
-          Cancel
+          Hủy
         </Link>
         <button
           type="submit"
           disabled={isSubmitting}
           className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
-          {isSubmitting ? "Saving..." : "Save Package"}
+          {isSubmitting ? "Đang lưu..." : "Lưu gói chụp"}
         </button>
       </div>
     </form>
@@ -538,12 +553,12 @@ function MediaBlock({
             onClick={() => onClear([])}
             className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
           >
-            Remove
+            Gỡ bỏ
           </button>
         </div>
       ) : (
         <p className="rounded-md border border-zinc-200 bg-white px-3 py-4 text-sm text-zinc-500">
-          No image selected.
+          {emptyLabel}
         </p>
       )}
     </div>
@@ -562,8 +577,4 @@ function MediaThumb({ item }: { item: MediaChoice }) {
       />
     </div>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

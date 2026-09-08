@@ -20,6 +20,11 @@ import {
   getAbout,
   updateAbout,
 } from "@/lib/api/about";
+import {
+  getAdminErrorMessage,
+  loadErrorMessage,
+  saveErrorMessage,
+} from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 import { getPublicUrl } from "@/lib/site-url";
 
@@ -51,7 +56,7 @@ export default function AboutCmsPage() {
         setAbout(response.data);
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to load about CMS."));
+      setError(getAdminErrorMessage(caughtError, loadErrorMessage));
     } finally {
       setIsLoading(false);
     }
@@ -86,10 +91,10 @@ export default function AboutCmsPage() {
 
       if (response) {
         setAbout(response.data);
-        setNotice("About page saved.");
+        setNotice("Đã lưu trang giới thiệu.");
       }
     } catch (caughtError) {
-      setError(getErrorMessage(caughtError, "Unable to save about page."));
+      setError(getAdminErrorMessage(caughtError, saveErrorMessage));
     } finally {
       setIsSaving(false);
     }
@@ -137,7 +142,7 @@ export default function AboutCmsPage() {
   if (isLoading || !about) {
     return (
       <main className="mx-auto w-full max-w-5xl">
-        <p className="text-sm text-zinc-600">Loading about CMS...</p>
+        <p className="text-sm text-zinc-600">Đang tải trang giới thiệu...</p>
       </main>
     );
   }
@@ -147,10 +152,10 @@ export default function AboutCmsPage() {
       <header className="flex flex-col gap-4 border-b border-zinc-200 pb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-            CMS
+            Nội dung website
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-            About
+            Giới thiệu
           </h1>
         </div>
         <Link
@@ -159,7 +164,7 @@ export default function AboutCmsPage() {
           rel="noopener noreferrer"
           className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-semibold hover:bg-zinc-50"
         >
-          View page
+          Xem trang
         </Link>
       </header>
 
@@ -175,9 +180,9 @@ export default function AboutCmsPage() {
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
-        <FormSection title="Hero">
+        <FormSection title="Ảnh đầu trang">
           <TextField
-            label="Eyebrow"
+            label="Dòng giới thiệu nhỏ"
             value={about.hero.eyebrow}
             onChange={(eyebrow) =>
               patchAbout((current) => ({
@@ -188,7 +193,7 @@ export default function AboutCmsPage() {
             maxLength={120}
           />
           <TextField
-            label="Title"
+            label="Tiêu đề"
             value={about.hero.title}
             onChange={(title) =>
               patchAbout((current) => ({
@@ -200,7 +205,7 @@ export default function AboutCmsPage() {
             required
           />
           <TextArea
-            label="Subtitle"
+            label="Mô tả"
             value={about.hero.subtitle}
             onChange={(subtitle) =>
               patchAbout((current) => ({
@@ -212,8 +217,8 @@ export default function AboutCmsPage() {
             rows={3}
           />
           <SingleMediaField
-            label="Hero image"
-            pickerTitle="Choose hero image"
+            label="Ảnh đầu trang"
+            pickerTitle="Chọn ảnh đầu trang"
             value={about.hero.media ? [about.hero.media] : []}
             onChange={(items) =>
               patchAbout((current) => ({
@@ -228,9 +233,9 @@ export default function AboutCmsPage() {
           />
         </FormSection>
 
-        <FormSection title="Story">
+        <FormSection title="Câu chuyện Studio">
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={about.story.heading}
             onChange={(heading) =>
               patchAbout((current) => ({
@@ -250,8 +255,8 @@ export default function AboutCmsPage() {
             }
           />
           <SingleMediaField
-            label="Story image"
-            pickerTitle="Choose story image"
+            label="Ảnh câu chuyện"
+            pickerTitle="Chọn ảnh câu chuyện"
             value={about.story.media ? [about.story.media] : []}
             onChange={(items) =>
               patchAbout((current) => ({
@@ -266,9 +271,9 @@ export default function AboutCmsPage() {
           />
         </FormSection>
 
-        <FormSection title="Philosophy">
+        <FormSection title="Giá trị / Phong cách">
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={about.philosophy.heading}
             onChange={(heading) =>
               patchAbout((current) => ({
@@ -279,7 +284,7 @@ export default function AboutCmsPage() {
             maxLength={180}
           />
           <EditableItems
-            addLabel="Add item"
+            addLabel="Thêm mục"
             canAdd={about.philosophy.items.length < maxPhilosophyItems}
             onAdd={() =>
               patchAbout((current) => ({
@@ -297,7 +302,7 @@ export default function AboutCmsPage() {
             {about.philosophy.items.map((item, index) => (
               <EditableItem key={`philosophy-${index}`} index={index}>
                 <TextField
-                  label="Title"
+                  label="Tiêu đề"
                   value={item.title}
                   onChange={(title) =>
                     patchAbout((current) => ({
@@ -314,7 +319,7 @@ export default function AboutCmsPage() {
                   maxLength={120}
                 />
                 <TextArea
-                  label="Description"
+                  label="Mô tả"
                   value={item.description}
                   onChange={(description) =>
                     patchAbout((current) => ({
@@ -366,9 +371,9 @@ export default function AboutCmsPage() {
           </EditableItems>
         </FormSection>
 
-        <FormSection title="Team">
+        <FormSection title="Đội ngũ">
           <ToggleField
-            label="Enabled"
+            label="Hiển thị mục này"
             checked={about.team.enabled}
             onChange={(enabled) =>
               patchAbout((current) => ({
@@ -378,7 +383,7 @@ export default function AboutCmsPage() {
             }
           />
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={about.team.heading}
             onChange={(heading) =>
               patchAbout((current) => ({
@@ -389,7 +394,7 @@ export default function AboutCmsPage() {
             maxLength={180}
           />
           <EditableItems
-            addLabel="Add member"
+            addLabel="Thêm thành viên"
             canAdd={about.team.members.length < maxTeamMembers}
             onAdd={() =>
               patchAbout((current) => ({
@@ -408,7 +413,7 @@ export default function AboutCmsPage() {
               <EditableItem key={`team-${index}`} index={index}>
                 <div className="grid gap-5 md:grid-cols-2">
                   <TextField
-                    label="Name"
+                    label="Tên"
                     value={member.name}
                     onChange={(name) =>
                       patchAbout((current) => ({
@@ -425,7 +430,7 @@ export default function AboutCmsPage() {
                     maxLength={120}
                   />
                   <TextField
-                    label="Role"
+                    label="Vai trò"
                     value={member.role}
                     onChange={(role) =>
                       patchAbout((current) => ({
@@ -443,7 +448,7 @@ export default function AboutCmsPage() {
                   />
                 </div>
                 <TextArea
-                  label="Bio"
+                  label="Giới thiệu"
                   value={member.bio}
                   onChange={(bio) =>
                     patchAbout((current) => ({
@@ -460,8 +465,8 @@ export default function AboutCmsPage() {
                   rows={4}
                 />
                 <SingleMediaField
-                  label="Image"
-                  pickerTitle="Choose team image"
+                  label="Hình ảnh"
+                  pickerTitle="Chọn ảnh thành viên"
                   value={member.media ? [member.media] : []}
                   onChange={(items) =>
                     patchAbout((current) => ({
@@ -515,9 +520,9 @@ export default function AboutCmsPage() {
           </EditableItems>
         </FormSection>
 
-        <FormSection title="Metrics">
+        <FormSection title="Các con số nổi bật">
           <EditableItems
-            addLabel="Add metric"
+            addLabel="Thêm con số"
             canAdd={about.metrics.length < maxMetrics}
             onAdd={() =>
               patchAbout((current) => ({
@@ -530,7 +535,7 @@ export default function AboutCmsPage() {
               <EditableItem key={`metric-${index}`} index={index}>
                 <div className="grid gap-5 md:grid-cols-2">
                   <TextField
-                    label="Value"
+                    label="Số liệu"
                     value={metric.value}
                     onChange={(value) =>
                       patchAbout((current) => ({
@@ -543,7 +548,7 @@ export default function AboutCmsPage() {
                     maxLength={50}
                   />
                   <TextField
-                    label="Label"
+                    label="Nhãn hiển thị"
                     value={metric.label}
                     onChange={(label) =>
                       patchAbout((current) => ({
@@ -579,10 +584,10 @@ export default function AboutCmsPage() {
           </EditableItems>
         </FormSection>
 
-        <FormSection title="Gallery">
+        <FormSection title="Hình ảnh Studio">
           <MultiMediaField
-            label="Images"
-            pickerTitle="Choose gallery images"
+            label="Hình ảnh"
+            pickerTitle="Chọn hình ảnh"
             value={about.gallery}
             onChange={(items) =>
               patchAbout((current) => ({
@@ -595,9 +600,9 @@ export default function AboutCmsPage() {
           />
         </FormSection>
 
-        <FormSection title="Booking CTA">
+        <FormSection title="Khu vực đặt lịch">
           <TextField
-            label="Heading"
+            label="Tiêu đề"
             value={about.bookingCta.heading}
             onChange={(heading) =>
               patchAbout((current) => ({
@@ -608,7 +613,7 @@ export default function AboutCmsPage() {
             maxLength={180}
           />
           <TextArea
-            label="Description"
+            label="Mô tả"
             value={about.bookingCta.description}
             onChange={(description) =>
               patchAbout((current) => ({
@@ -620,7 +625,7 @@ export default function AboutCmsPage() {
             rows={3}
           />
           <TextField
-            label="Button label"
+            label="Chữ trên nút"
             value={about.bookingCta.buttonLabel}
             onChange={(buttonLabel) =>
               patchAbout((current) => ({
@@ -634,7 +639,7 @@ export default function AboutCmsPage() {
 
         <FormSection title="SEO">
           <TextField
-            label="SEO Title"
+            label="Tiêu đề SEO"
             value={about.seo.title}
             onChange={(title) =>
               patchAbout((current) => ({
@@ -645,7 +650,7 @@ export default function AboutCmsPage() {
             maxLength={70}
           />
           <TextArea
-            label="SEO Description"
+            label="Mô tả SEO"
             value={about.seo.description}
             onChange={(description) =>
               patchAbout((current) => ({
@@ -657,8 +662,8 @@ export default function AboutCmsPage() {
             rows={3}
           />
           <SingleMediaField
-            label="OG Image"
-            pickerTitle="Choose about OG image"
+            label="Ảnh chia sẻ"
+            pickerTitle="Chọn ảnh chia sẻ trang giới thiệu"
             value={about.seo.ogImage ? [about.seo.ogImage] : []}
             onChange={(items) =>
               patchAbout((current) => ({
@@ -679,7 +684,7 @@ export default function AboutCmsPage() {
             disabled={isSaving}
             className="rounded-md bg-zinc-950 px-5 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
           >
-            {isSaving ? "Saving..." : "Save About"}
+            {isSaving ? "Đang lưu..." : "Lưu giới thiệu"}
           </button>
         </div>
       </form>
@@ -725,7 +730,7 @@ function EditableItem({
   return (
     <div className="rounded-md border border-zinc-200 bg-white p-4">
       <p className="mb-4 text-sm font-semibold text-zinc-500">
-        Item {index + 1}
+        Mục {index + 1}
       </p>
       <div className="space-y-4">{children}</div>
     </div>
@@ -751,7 +756,7 @@ function ItemActions({
         disabled={index === 0}
         className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
       >
-        Move Up
+        Di chuyển lên
       </button>
       <button
         type="button"
@@ -759,14 +764,14 @@ function ItemActions({
         disabled={index === count - 1}
         className="rounded-md border border-zinc-300 px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:text-zinc-400"
       >
-        Move Down
+        Di chuyển xuống
       </button>
       <button
         type="button"
         onClick={onRemove}
         className="rounded-md border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50"
       >
-        Remove
+        Gỡ bỏ
       </button>
     </div>
   );
@@ -875,8 +880,4 @@ function moveArrayItem<T>(items: T[], index: number, direction: -1 | 1): T[] {
 
   nextItems.splice(nextIndex, 0, item);
   return nextItems;
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

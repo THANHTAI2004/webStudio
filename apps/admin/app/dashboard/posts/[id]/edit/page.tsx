@@ -9,6 +9,7 @@ import {
   getPostCategories,
 } from "@/lib/api/post-categories";
 import { type AdminPost, getPostById } from "@/lib/api/posts";
+import { getAdminErrorMessage, loadErrorMessage } from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 export default function EditPostPage() {
@@ -42,7 +43,7 @@ export default function EditPostPage() {
           setPost(postResponse.data);
           setCategories(categoryResponse.data);
         } catch (caughtError) {
-          setError(getErrorMessage(caughtError, "Unable to load post."));
+          setError(getAdminErrorMessage(caughtError, loadErrorMessage));
         } finally {
           setIsLoading(false);
         }
@@ -63,10 +64,10 @@ export default function EditPostPage() {
           href="/dashboard/posts"
           className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
         >
-          Posts
+          Bài viết
         </Link>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          Edit Post
+          Chỉnh sửa bài viết
         </h1>
       </header>
 
@@ -77,7 +78,7 @@ export default function EditPostPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading form...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       {!isLoading && post && categories.length > 0 ? (
@@ -87,8 +88,4 @@ export default function EditPostPage() {
       ) : null}
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

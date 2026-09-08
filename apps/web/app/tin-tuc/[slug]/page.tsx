@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublicButtonLink, SectionHeader, dateFormatter } from "@/components/ui/public-ui";
 import { getMediaAssetUrl } from "@/lib/api/client";
 import {
   getPostBySlug,
+  getPosts,
   type PublicMediaPreview,
   type PublicPostDetail,
+  type PublicPostListItem,
 } from "@/lib/api/posts";
 
-const LIST_TITLE = "Tin t\u1ee9c";
+const LIST_TITLE = "Bài viết";
 
 interface ArticleDetailPageProps {
   params: Promise<{
@@ -25,7 +28,7 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "Kh\u00f4ng t\u00ecm th\u1ea5y b\u00e0i vi\u1ebft | Studio",
+      title: "Không tìm thấy bài viết | Studio",
     };
   }
 
@@ -68,81 +71,153 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
+  const relatedResponse = post.category
+    ? await getPosts({ page: 1, limit: 4, category: post.category.slug })
+    : null;
+  const relatedPosts =
+    relatedResponse?.data.filter((item) => item.id !== post.id).slice(0, 3) ??
+    [];
   const jsonLd = createBlogPostingJsonLd(post);
 
   return (
-    <main className="min-h-screen bg-stone-50 text-zinc-950">
+    <main>
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      <article className="mx-auto w-full max-w-6xl px-6 py-10">
-        <nav className="text-sm text-zinc-500">
-          <Link href="/tin-tuc" className="font-medium hover:text-zinc-900">
-            {LIST_TITLE}
-          </Link>
-          <span className="px-2">/</span>
-          <span>{post.title}</span>
-        </nav>
+      <article>
+        <section className="public-section">
+          <div className="site-container">
+            <nav className="public-breadcrumb" aria-label="Đường dẫn">
+              <Link href="/tin-tuc">{LIST_TITLE}</Link>
+              <span>/</span>
+              <span>{post.title}</span>
+            </nav>
 
-        <header className="mx-auto mt-6 max-w-3xl border-b border-zinc-200 pb-8">
-          {post.category ? (
-            <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-              {post.category.name}
-            </p>
-          ) : null}
-          <h1 className="mt-3 text-4xl font-semibold tracking-normal">
-            {post.title}
-          </h1>
-          {post.publishedAt ? (
-            <p className="mt-4 text-sm text-zinc-500">
-              {formatDate(post.publishedAt)}
-            </p>
-          ) : null}
-          {post.excerpt ? (
-            <p className="mt-6 text-lg leading-8 text-zinc-600">
-              {post.excerpt}
-            </p>
-          ) : null}
-        </header>
+            <header className="mx-auto max-w-3xl text-center">
+              <p className="section-eyebrow">
+                {post.category?.name ?? "Bài viết"}
+              </p>
+              <h1
+                className="mt-4 text-4xl font-semibold leading-tight md:text-6xl"
+                style={{ fontFamily: "var(--font-heading)" }}
+              >
+                {post.title}
+              </h1>
+              {post.publishedAt ? (
+                <p className="mt-5 text-sm font-semibold text-[var(--color-muted)]">
+                  {dateFormatter.format(new Date(post.publishedAt))}
+                </p>
+              ) : null}
+              {post.excerpt ? (
+                <p className="mt-6 text-lg leading-8 text-[var(--color-muted)]">
+                  {post.excerpt}
+                </p>
+              ) : null}
+            </header>
 
-        {post.cover ? (
-          <div className="mx-auto mt-8 max-w-5xl">
-            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-zinc-100">
-              <Image
-                src={getMediaAssetUrl(post.cover.url)}
-                alt={post.cover.alt || post.title}
-                fill
-                priority
-                sizes="(min-width: 1024px) 960px, 100vw"
-                className="object-cover"
-              />
-            </div>
+            {post.cover ? (
+              <div className="mx-auto mt-10 max-w-5xl">
+                <div className="image-frame aspect-[16/9]">
+                  <Image
+                    src={getMediaAssetUrl(post.cover.url)}
+                    alt={post.cover.alt || post.title}
+                    fill
+                    priority
+                    sizes="(min-width: 1024px) 960px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+            ) : null}
           </div>
-        ) : null}
+        </section>
 
         {post.contentHtml ? (
-          <section className="mx-auto mt-8 max-w-3xl">
-            {/* contentHtml is persisted only after backend sanitize-html policy. Do not render unsanitized editor state here. */}
-            <div
-              className="article-prose text-base leading-8 text-zinc-700 [&_a]:font-semibold [&_a]:text-emerald-700 [&_blockquote]:border-l-4 [&_blockquote]:border-zinc-300 [&_blockquote]:pl-5 [&_blockquote]:text-zinc-600 [&_code]:rounded [&_code]:bg-zinc-100 [&_code]:px-1 [&_h2]:mb-3 [&_h2]:mt-9 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-3 [&_h3]:mt-7 [&_h3]:text-xl [&_h3]:font-semibold [&_h4]:mb-2 [&_h4]:mt-6 [&_h4]:text-lg [&_h4]:font-semibold [&_hr]:my-8 [&_li]:mt-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-4 [&_pre]:my-5 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-zinc-950 [&_pre]:p-4 [&_pre]:text-zinc-50 [&_ul]:list-disc [&_ul]:pl-6"
-              dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-            />
+          <section className="public-section public-section--surface">
+            <div className="site-container">
+              <div className="mx-auto max-w-3xl">
+                {/* contentHtml is persisted only after backend sanitize-html policy. */}
+                <div
+                  className="article-prose [&_blockquote]:border-l-4 [&_blockquote]:border-[var(--color-accent)] [&_blockquote]:pl-5 [&_code]:rounded [&_code]:bg-[var(--color-secondary)] [&_code]:px-1 [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:text-3xl [&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:text-2xl [&_h4]:mb-2 [&_h4]:mt-6 [&_h4]:text-xl [&_hr]:my-8 [&_li]:mt-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-5 [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-zinc-950 [&_pre]:p-4 [&_pre]:text-zinc-50 [&_ul]:list-disc [&_ul]:pl-6"
+                  dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+                />
+              </div>
+            </div>
           </section>
         ) : null}
 
         {post.tags.length > 0 ? (
-          <footer className="mx-auto mt-8 flex max-w-3xl flex-wrap gap-2 border-t border-zinc-200 pt-6">
-            {post.tags.map((tag) => (
-              <Link
-                key={tag}
-                href={`/tin-tuc?tag=${encodeURIComponent(tag)}`}
-                className="rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50"
-              >
-                {tag}
-              </Link>
-            ))}
+          <footer className="public-section">
+            <div className="site-container">
+              <div className="mx-auto flex max-w-3xl flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <Link
+                    key={tag}
+                    href={`/tin-tuc?tag=${encodeURIComponent(tag)}`}
+                    className="category-chip"
+                  >
+                    {tag}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </footer>
         ) : null}
+
+        {relatedPosts.length > 0 ? (
+          <section className="public-section public-section--surface">
+            <div className="site-container">
+              <SectionHeader
+                eyebrow="Đọc tiếp"
+                title="Bài viết liên quan"
+                actionHref="/tin-tuc"
+                actionLabel="Xem tất cả bài viết"
+              />
+              <div className="mt-10 grid gap-6 md:grid-cols-3">
+                {relatedPosts.map((item) => (
+                  <RelatedPostCard key={item.id} post={item} />
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="public-section">
+            <div className="site-container text-center">
+              <PublicButtonLink href="/tin-tuc" variant="secondary">
+                Xem thêm bài viết
+              </PublicButtonLink>
+            </div>
+          </section>
+        )}
       </article>
     </main>
+  );
+}
+
+function RelatedPostCard({ post }: { post: PublicPostListItem }) {
+  return (
+    <article className="public-card">
+      <Link href={`/tin-tuc/${post.slug}`} className="image-link aspect-[4/3]">
+        {post.cover ? (
+          <Image
+            src={getMediaAssetUrl(post.cover.url)}
+            alt={post.cover.alt || post.title}
+            fill
+            sizes="(min-width: 768px) 33vw, 100vw"
+            className="object-cover"
+          />
+        ) : (
+          <span className="media-fallback">Bài viết</span>
+        )}
+      </Link>
+      <div className="p-5">
+        <p className="section-eyebrow">{post.category?.name ?? "Bài viết"}</p>
+        <h2
+          className="mt-3 text-2xl font-semibold leading-tight"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
+          <Link href={`/tin-tuc/${post.slug}`}>{post.title}</Link>
+        </h2>
+      </div>
+    </article>
   );
 }
 
@@ -171,12 +246,6 @@ function createBlogPostingJsonLd(post: PublicPostDetail) {
       name: "Studio",
     },
   };
-}
-
-function formatDate(value: string): string {
-  return new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "medium",
-  }).format(new Date(value));
 }
 
 function getCanonicalPath(path: string): string | undefined {

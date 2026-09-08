@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublicButtonLink, SectionHeader } from "@/components/ui/public-ui";
 import { getMediaAssetUrl } from "@/lib/api/client";
 import {
   getLocationBySlug,
@@ -11,11 +12,12 @@ import {
 } from "@/lib/api/locations";
 import {
   formatOpeningHour,
+  getOpeningStatus,
   getOrderedOpeningHours,
   weekdayLabels,
 } from "@/lib/location-format";
 
-const LIST_TITLE = "\u0110\u1ecba \u0111i\u1ec3m";
+const LIST_TITLE = "Cơ sở";
 
 interface LocationDetailPageProps {
   params: Promise<{
@@ -31,7 +33,7 @@ export async function generateMetadata({
 
   if (!location) {
     return {
-      title: "Location not found | Studio",
+      title: "Không tìm thấy cơ sở | Studio",
     };
   }
 
@@ -66,138 +68,148 @@ export default async function LocationDetailPage({
   }
 
   const mapHref = getMapHref(location);
+  const openingStatus = getOpeningStatus(location.openingHours);
   const jsonLd = createLocalBusinessJsonLd(location);
 
   return (
-    <main className="min-h-screen bg-stone-50 text-zinc-950">
+    <main>
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-      <article className="mx-auto w-full max-w-6xl px-6 py-10">
-        <nav className="text-sm text-zinc-500">
-          <Link href="/dia-diem" className="font-medium hover:text-zinc-900">
-            {LIST_TITLE}
-          </Link>
-          <span className="px-2">/</span>
-          <span>{location.name}</span>
-        </nav>
+      <article>
+        <section className="public-section">
+          <div className="site-container">
+            <nav className="public-breadcrumb" aria-label="Đường dẫn">
+              <Link href="/dia-diem">{LIST_TITLE}</Link>
+              <span>/</span>
+              <span>{location.name}</span>
+            </nav>
 
-        <header className="mt-6 grid gap-8 border-b border-zinc-200 pb-8 lg:grid-cols-[1fr_1fr] lg:items-start">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-normal text-emerald-700">
-              Studio
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold tracking-normal">
-              {location.name}
-            </h1>
-            <p className="mt-5 whitespace-pre-line text-base leading-7 text-zinc-600">
-              {location.description || location.address}
-            </p>
-            <div className="mt-6 grid gap-3 text-sm text-zinc-700">
-              <p>
-                <span className="font-semibold">Address: </span>
-                {location.address}
-              </p>
-              <p>
-                <span className="font-semibold">Phone: </span>
-                {location.phone}
-              </p>
-              {location.email ? (
-                <p>
-                  <span className="font-semibold">Email: </span>
-                  {location.email}
+            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+              <header>
+                <p className="section-eyebrow">Cơ sở Studio</p>
+                <h1 className="display-heading">{location.name}</h1>
+                <p className="page-hero__lead">
+                  {location.description || location.address}
                 </p>
-              ) : null}
-            </div>
-            <div className="mt-7 flex flex-wrap gap-2">
-              <Link
-                href={`/dat-lich?location=${location.slug}`}
-                className="rounded-md bg-zinc-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
-              >
-                {"\u0110\u1eb7t l\u1ecbch"}
-              </Link>
-              {mapHref ? (
-                <a
-                  href={mapHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-md border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold transition hover:bg-zinc-50"
+                <p
+                  className={`mt-5 text-sm font-extrabold ${
+                    openingStatus.isOpen
+                      ? "text-emerald-700"
+                      : "text-[var(--color-muted)]"
+                  }`}
                 >
-                  {"Xem b\u1ea3n \u0111\u1ed3"}
-                </a>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100">
-            {location.cover ? (
-              <Image
-                src={getMediaAssetUrl(location.cover.url)}
-                alt={location.cover.alt || location.name}
-                fill
-                priority
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm text-zinc-500">
-                Studio
-              </div>
-            )}
-          </div>
-        </header>
-
-        <div className="grid gap-8 border-b border-zinc-200 py-8 lg:grid-cols-[320px_1fr]">
-          <section>
-            <h2 className="text-lg font-semibold">Opening Hours</h2>
-            <dl className="mt-4 space-y-3 text-sm">
-              {getOrderedOpeningHours(location.openingHours).map((item) => (
-                <div
-                  key={item.day}
-                  className="flex items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-3 py-2"
-                >
-                  <dt className="font-semibold text-zinc-700">
-                    {weekdayLabels[item.day]}
-                  </dt>
-                  <dd className="text-zinc-600">{formatOpeningHour(item)}</dd>
+                  {openingStatus.text}
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <PublicButtonLink
+                    href={`/dat-lich?location=${location.slug}`}
+                  >
+                    Đặt lịch tại cơ sở này
+                  </PublicButtonLink>
+                  {mapHref ? (
+                    <a
+                      href={mapHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="theme-button-secondary"
+                    >
+                      Xem bản đồ
+                    </a>
+                  ) : null}
                 </div>
-              ))}
-            </dl>
-          </section>
+              </header>
 
-          <section>
-            <h2 className="text-lg font-semibold">Contact</h2>
-            <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-700">
-              <p>{location.address}</p>
-              <p>{location.phone}</p>
-              {location.email ? <p>{location.email}</p> : null}
-              {location.coordinates.latitude !== null &&
-              location.coordinates.longitude !== null ? (
-                <p>
-                  {location.coordinates.latitude},{" "}
-                  {location.coordinates.longitude}
-                </p>
-              ) : null}
-            </div>
-          </section>
-        </div>
-
-        {location.gallery.length > 0 ? (
-          <section className="py-8">
-            <h2 className="text-lg font-semibold">Gallery</h2>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {location.gallery.map((image) => (
-                <div
-                  key={image.id}
-                  className="relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100"
-                >
+              <div className="image-frame aspect-[4/3]">
+                {location.cover ? (
                   <Image
-                    src={getMediaAssetUrl(image.medium.url)}
-                    alt={image.alt || location.name}
+                    src={getMediaAssetUrl(location.cover.url)}
+                    alt={location.cover.alt || location.name}
                     fill
-                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    priority
+                    sizes="(min-width: 1024px) 54vw, 100vw"
                     className="object-cover"
                   />
-                </div>
-              ))}
+                ) : (
+                  <div className="media-fallback">Cơ sở</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="public-section public-section--surface">
+          <div className="site-container grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <SectionHeader eyebrow="Liên hệ" title="Thông tin cơ sở" />
+              <div className="mt-8 grid gap-4 text-sm leading-7 text-[var(--color-text)]">
+                <p className="theme-card p-4">
+                  <span className="block font-extrabold">Địa chỉ</span>
+                  <span className="text-[var(--color-muted)]">
+                    {location.address}
+                  </span>
+                </p>
+                {location.phone ? (
+                  <p className="theme-card p-4">
+                    <span className="block font-extrabold">Số điện thoại</span>
+                    <a
+                      href={`tel:${location.phone}`}
+                      className="text-[var(--color-muted)]"
+                    >
+                      {location.phone}
+                    </a>
+                  </p>
+                ) : null}
+                {location.email ? (
+                  <p className="theme-card p-4">
+                    <span className="block font-extrabold">Email</span>
+                    <a
+                      href={`mailto:${location.email}`}
+                      className="text-[var(--color-muted)]"
+                    >
+                      {location.email}
+                    </a>
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
+            <div>
+              <SectionHeader eyebrow="Thời gian" title="Giờ mở cửa" />
+              <dl className="mt-8 grid gap-3 text-sm">
+                {getOrderedOpeningHours(location.openingHours).map((item) => (
+                  <div
+                    key={item.day}
+                    className="flex items-center justify-between gap-3 border-b border-[var(--color-border)] py-3"
+                  >
+                    <dt className="font-extrabold text-[var(--color-text)]">
+                      {weekdayLabels[item.day]}
+                    </dt>
+                    <dd className="text-[var(--color-muted)]">
+                      {formatOpeningHour(item)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        {location.gallery.length > 0 ? (
+          <section className="public-section">
+            <div className="site-container">
+              <SectionHeader eyebrow="Không gian" title="Hình ảnh cơ sở" />
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {location.gallery.map((image) => (
+                  <div key={image.id} className="image-frame aspect-[4/3]">
+                    <Image
+                      src={getMediaAssetUrl(image.medium.url)}
+                      alt={image.alt || location.name}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
         ) : null}

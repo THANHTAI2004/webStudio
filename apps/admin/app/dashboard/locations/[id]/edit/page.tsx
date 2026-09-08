@@ -8,6 +8,7 @@ import {
   type AdminLocation,
   getLocationById,
 } from "@/lib/api/locations";
+import { getAdminErrorMessage, loadErrorMessage } from "@/lib/admin-labels";
 import { withAuthRefresh } from "@/lib/api/session";
 
 export default function EditLocationPage() {
@@ -37,7 +38,7 @@ export default function EditLocationPage() {
             setLocation(response.data);
           }
         } catch (caughtError) {
-          setError(getErrorMessage(caughtError, "Unable to load location."));
+          setError(getAdminErrorMessage(caughtError, loadErrorMessage));
         } finally {
           setIsLoading(false);
         }
@@ -58,10 +59,10 @@ export default function EditLocationPage() {
           href="/dashboard/locations"
           className="text-sm font-medium text-zinc-500 transition hover:text-zinc-900"
         >
-          Locations
+          Cơ sở
         </Link>
         <h1 className="mt-2 text-3xl font-semibold tracking-normal">
-          Edit Location
+          Chỉnh sửa cơ sở
         </h1>
       </header>
 
@@ -72,7 +73,7 @@ export default function EditLocationPage() {
       ) : null}
 
       {isLoading ? (
-        <p className="mt-8 text-sm text-zinc-600">Loading form...</p>
+        <p className="mt-8 text-sm text-zinc-600">Đang tải...</p>
       ) : null}
 
       {!isLoading && location ? (
@@ -82,8 +83,4 @@ export default function EditLocationPage() {
       ) : null}
     </section>
   );
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
 }

@@ -43,14 +43,14 @@ interface CmsRequestOptions {
 
 export const fallbackTheme: PublicTheme = {
   colors: {
-    primary: "#0F766E",
-    secondary: "#111827",
-    background: "#FAFAF9",
+    primary: "#25231F",
+    secondary: "#EDE8E2",
+    background: "#F7F5F2",
     surface: "#FFFFFF",
-    text: "#18181B",
-    mutedText: "#52525B",
-    border: "#E4E4E7",
-    accent: "#C9A96E",
+    text: "#1D1D1B",
+    mutedText: "#77736D",
+    border: "#DDD8D1",
+    accent: "#B39568",
   },
   buttons: {
     radius: 6,
@@ -60,10 +60,10 @@ export const fallbackTheme: PublicTheme = {
     radius: 8,
   },
   layout: {
-    maxWidth: 1152,
+    maxWidth: 1240,
   },
   typography: {
-    headingFont: "sans",
+    headingFont: "serif",
     bodyFont: "sans",
   },
 };
